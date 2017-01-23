@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GTEST_DIR=googletest/googletest
+GTEST_DIR=../googletest/googletest
 case `uname` in
   Linux)
     g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
