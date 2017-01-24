@@ -1,4 +1,5 @@
-server
+simple-config
+web-server
 *.swp
 *.o
 *.a
