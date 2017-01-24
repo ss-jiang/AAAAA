@@ -1,4 +1,4 @@
-# Simple Echo Webserver using the Roost API
+# Simple Echo Webserver using the Boost API
 
 ## To get Boost
 ``` sudo apt-get install libboost-all-dev ```
