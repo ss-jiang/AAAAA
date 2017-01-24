@@ -29,11 +29,11 @@ int main(int argc, char* argv[])
     // look for port num in config
     for (int i = 0; i < num_statements; i++) {
         // if curr statement : port <num>
-        if (config.statements_[i].tokens_[0] == "port" 
-            && config.statements_[i].tokens_.size() == 2) {
+        if (config.statements_[i]->tokens_[0] == "port" 
+            && config.statements_[i]->tokens_.size() == 2) {
             
             // save away port
-            port = std::atoi(config.statements_[i].tokens_[1]);
+            port = std::atoi(config.statements_[i]->tokens_[1].c_str());
         }
     }
 
