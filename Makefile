@@ -1,5 +1,5 @@
 LDFLAGS=-pthread -lboost_system
-CXXFLAGS=-Wall -Werror
+CXXFLAGS=-Wall -Werror -std=c++0x
 CP_LOC=config_parser/
 
 all: server.o session.o main.o config_parser.o
@@ -12,7 +12,7 @@ session.o: session.cpp session.h
 	g++ -c session.cpp $(LDFLAGS) $(CXXFLAGS)
 
 config_parser.o: $(CP_LOC)config_parser.cc $(CP_LOC)config_parser.h
-	g++ -c $(CP_LOC)config_parser.cc -std=c++0x -g $(CXXFLAGS)
+	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
 
 main.o: main.cpp server.h session.h $(CP_LOC)config_parser.h
 	g++ -c main.cpp $(LDFLAGS) $(CXXFLAGS)
