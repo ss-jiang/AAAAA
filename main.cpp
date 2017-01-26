@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
     // only one arg to server possible
     if (argc != 2)
     {
-      std::cerr << "Usage: web-server <config-file>\n";
+      std::cerr << "Usage: " << argv[0] << " <config-file>\n";
       return 1;
     }
 
