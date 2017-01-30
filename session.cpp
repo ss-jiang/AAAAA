@@ -14,12 +14,13 @@ void session::start()
   std::cout << "========= Starting session =========" << std::endl;
   
   boost::asio::async_read_until(socket_, buffer, "\r\n\r\n",
-      boost::bind(&session::handle_read, this,
+      boost::bind(&session::handle_write, this,
       boost::asio::placeholders::error,
       boost::asio::placeholders::bytes_transferred));
 }
 
-void session::handle_read(const boost::system::error_code& error,
+
+int session::handle_write(const boost::system::error_code& error,
     size_t bytes_transferred)
 {
 
@@ -27,16 +28,9 @@ void session::handle_read(const boost::system::error_code& error,
 
   // output buffer
   boost::asio::streambuf out_streambuf;
-  std::ostream out(&out_streambuf);
   
-  // setup headers
-  out << "HTTP/1.1 200 OK\r\n";
-  out << "Content-Type: text/plain\r\n";
-  // minus 4 for the double carriage return
-  out << "Content-Length: " << bytes_transferred - 4 << "\r\n\r\n";
-  
-  // echo message under headers
-  out << &buffer;
+  //sets up the output buffer with the correct headers
+  setup_obuffer(out_streambuf, bytes_transferred);
   
   if (!error)
   {
@@ -54,6 +48,21 @@ void session::handle_read(const boost::system::error_code& error,
   }
   else
   {
-    delete this;
+    std::cerr << error.message() << std::endl;
+    return -1;
   }
+  return 0;
+}
+
+void session::setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred)
+{
+  std::ostream out(&out_streambuf);
+  // setup headers
+  out << "HTTP/1.1 200 OK\r\n";
+  out << "Content-Type: text/plain\r\n";
+  // minus 4 for the double carriage return
+  out << "Content-Length: " << bytes_transferred - 4 << "\r\n\r\n";
+  
+  // echo message under headers
+  out << &buffer;
 }

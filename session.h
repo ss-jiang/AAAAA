@@ -13,7 +13,8 @@ public:
   session(boost::asio::io_service& io_service);
   tcp::socket& socket();
   void start();
-  void handle_read(const boost::system::error_code& error, size_t bytes_transferred);
+  int handle_write(const boost::system::error_code& error, size_t bytes_transferred);
+  void setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred);
 
 private:
   tcp::socket socket_;

@@ -17,7 +17,10 @@ config_parser.o: $(CP_LOC)config_parser.cc $(CP_LOC)config_parser.h
 main.o: main.cpp server.h session.h $(CP_LOC)config_parser.h
 	g++ -c main.cpp $(LDFLAGS) $(CXXFLAGS)
 
-.PHONY: clean, all
+.PHONY: clean, all, test
+
+test:
+	./build_echo_tests.sh
 
 clean:
 	rm *.o web-server
