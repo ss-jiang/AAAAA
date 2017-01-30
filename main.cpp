@@ -21,7 +21,10 @@ int main(int argc, char* argv[])
     NginxConfig config;
     
     // read config file
-    parser.Parse(argv[1], &config);
+    if (!parser.Parse(argv[1], &config)){
+      std::cerr << "Error: malformed config file." << std::endl;
+      return 1;
+    }
 
     short port = -1;
     int num_statements = config.statements_.size();
