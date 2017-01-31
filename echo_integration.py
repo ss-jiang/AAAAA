@@ -41,8 +41,8 @@ if __name__ == "__main__":
 
 	if (error_code[0] == 1):
 		print "\n\nTEST FAILURE\n"
-		sys.exit(1)
+		exit(1)
 	else:
 		print "\n\nTEST SUCCESS\n"
-		sys.exit(0)
+		exit(0)
 
