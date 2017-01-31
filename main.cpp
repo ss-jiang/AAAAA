@@ -5,6 +5,8 @@
 #include "config_parser/config_parser.h"
 #include "server.h"
 #include "session.h"
+#include "utils.h"
+
 
 int main(int argc, char* argv[])
 {
@@ -26,21 +28,9 @@ int main(int argc, char* argv[])
       return 1;
     }
 
-    short port = -1;
-    int num_statements = config.statements_.size();
-    
-    // look for port num in config
-    for (int i = 0; i < num_statements; i++) {
-        // if curr statement : port <num>
-        if (config.statements_[i]->tokens_[0] == "port" 
-            && config.statements_[i]->tokens_.size() == 2) {
-            
-            // save away port
-            port = std::atoi(config.statements_[i]->tokens_[1].c_str());
-        }
-    }
+    ServerInfo info = utils::setup_info_struct(config);
 
-    if (port == -1) {
+    if (info.port == -1) {
         std::cerr << "Port number was not specified in config\n";
         return 1;
     }
@@ -48,7 +38,7 @@ int main(int argc, char* argv[])
     boost::asio::io_service io_service;
     
     // create and start server
-    server s(io_service, port);
+    server s(io_service, info.port);
     io_service.run();
   }
   catch (std::exception& e)
