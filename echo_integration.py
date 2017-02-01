@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
 	time.sleep(4)
 
-	error_code = [0];
+	error_code = [0]
 	thread_client = Thread(target = client_thread, args=(error_code))
 	thread_client.start()
 	thread_client.join()
