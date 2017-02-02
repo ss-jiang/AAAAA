@@ -36,7 +36,7 @@ int session::handle_write(const boost::system::error_code& error,
   {
     boost::asio::write(socket_, out_streambuf);
     
-    // wait for transmission
+    // wait for transmission Note: this could hang forever
     tcdrain(socket_.native_handle());
 
     // close socket
