@@ -30,6 +30,7 @@ test:
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${TEST_FILES} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o echo_test -lboost_system
-
+	./echo_test
+	
 clean:
 	rm -f *.o web-server echo_test
