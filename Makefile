@@ -1,5 +1,5 @@
 LDFLAGS=-pthread -lboost_system
-CXXFLAGS=-Wall -Werror -std=c++0x
+CXXFLAGS=-Wall -Werror -std=c++0x -fprofile-arcs -ftest-coverage
 
 # directory locations
 CP_LOC=config_parser/
@@ -14,6 +14,7 @@ PARSER_TEST=test/config_parser_test.cc
 
 all: server.o session.o main.o config_parser.o utils.o
 	g++ -o bin/web-server main.o server.o session.o config_parser.o utils.o $(LDFLAGS) $(CXXFLAGS)
+
 
 server.o: server.cpp server.h
 	g++ -c server.cpp $(LDFLAGS) $(CXXFLAGS)
@@ -41,7 +42,10 @@ test:
 	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/utils_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/config_parser_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/server_test ${LDFLAGS} ${CXXFLAGS}
-	./bin/*_test
+	./bin/config_parser_test
+	./bin/server_test
+	./bin/session_test
+	./bin/utils_test
 
 clean:
-	rm -f *.o bin/*
+	rm -f *.o bin/* *.gcno *.gcov *.gcda
