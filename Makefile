@@ -3,9 +3,10 @@ CXXFLAGS=-Wall -Werror -std=c++0x
 CP_LOC=config_parser/
 GTEST_DIR=googletest/googletest
 GMOCK_DIR=googletest/googlemock
-SESSION_TEST=session_test.cpp session.cpp
-UTILS_TEST=utils_test.cpp 
-SERVER_TEST=server_test.cpp
+SESSION_TEST=tests/session_test.cpp session.cpp
+UTILS_TEST=tests/utils_test.cpp 
+SERVER_TEST=tests/server_test.cpp
+PARSER_TEST=tests/config_parser_test.cc
 CPPFLAGS += -isystem $(GTEST_DIR)/include -isystem $(GMOCK_DIR)/include
 
 all: server.o session.o main.o config_parser.o utils.o
@@ -48,6 +49,8 @@ test:
 
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o session_test -lboost_system
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test -lboost_system
-	g++ -lboost_system -std=c++0x -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include -pthread ${SERVER_TEST} libgtest.a libgmock.a utils.o config_parser.o -o server_test
+	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test -lboost_system
+	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test -lboost_system
+	#g++ -lboost_system -std=c++0x -isystem ${GTEST_DIR}/include -isystem ${GMOCK_DIR}/include -pthread ${SERVER_TEST} libgtest.a libgmock.a utils.o config_parser.o -o server_test
 clean:
 	rm -f *.o web-server session_test utils_test server_test
