@@ -36,7 +36,7 @@ test:
 	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
 	g++ -c utils.cpp $(LDFLAGS) $(CXXFLAGS)
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
-	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I ${GTEST_DIR} -isystem ${GMOCK_DIR}/include -I ${GMOCK_DIR} -pthread -c ${GMOCK_DIR}/src/gmock-all.cc
+	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -isystem ${GMOCK_DIR}/include -I${GMOCK_DIR} -pthread -c ${GMOCK_DIR}/src/gmock-all.cc
 
 	#$(CXX) $(CPPFLAGS) -I$(GTEST_DIR) -I$(GMOCK_DIR) $(CXXFLAGS) -c $(GMOCK_DIR)/src/gmock_main.cc
 
@@ -46,6 +46,6 @@ test:
 
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${TEST_FILES} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o session_test -lboost_system
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -pthread ${TEST_FILES} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test -lboost_system
-	g++ -lboost_system -std=c++0x -isystem ${GMOCK_DIR}/include -isystem ${GTEST_DIR} -pthread ${TEST_FILES} libgmock.a libgtest.a utils.o config_parser.o -o server_test
+	g++ -lboost_system -std=c++0x -isystem ${GTEST_DIR} -isystem ${GMOCK_DIR}/include -pthread ${TEST_FILES} libgtest.a libgmock.a utils.o config_parser.o -o server_test
 clean:
 	rm -f *.o web-server session_test utils_test server_test
