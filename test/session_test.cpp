@@ -28,7 +28,7 @@ TEST(HandleWriteTest, handle_write_err) {
   session s(io_service);
 
   boost::system::error_code error(4, boost::system::system_category());
-  size_t bytes_transferred;
+  size_t bytes_transferred = 0;
 
   EXPECT_EQ(-1, s.handle_write(error, bytes_transferred));
 }
