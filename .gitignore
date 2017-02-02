@@ -2,4 +2,6 @@ simple-config
 bin/*
 *.swp
 *.o
+*.gcda
+*.gcno
 *.a

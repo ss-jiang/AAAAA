@@ -13,7 +13,7 @@ SERVER_TEST=test/server_test.cpp
 PARSER_TEST=test/config_parser_test.cc
 
 all: server.o session.o main.o config_parser.o utils.o
-	g++ -o bin/web-server main.o server.o session.o config_parser.o utils.o $(LDFLAGS) $(CXXFLAGS)
+	g++ -o web-server main.o server.o session.o config_parser.o utils.o $(LDFLAGS) $(CXXFLAGS)
 
 
 server.o: server.cpp server.h
@@ -38,14 +38,14 @@ test:
 	g++ -c utils.cpp $(LDFLAGS) $(CXXFLAGS)
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
-	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/session_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/utils_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/config_parser_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o bin/server_test ${LDFLAGS} ${CXXFLAGS}
-	./bin/config_parser_test
-	./bin/server_test
-	./bin/session_test
-	./bin/utils_test
+	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o session_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test ${LDFLAGS} ${CXXFLAGS}
+	./config_parser_test
+	./server_test
+	./session_test
+	./utils_test
 
 clean:
-	rm -f *.o bin/* *.gcno *.gcov *.gcda
+	rm -f *.o *.gcno *.gcov *.gcda
