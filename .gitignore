@@ -1,6 +1,5 @@
-echo_test
 simple-config
-web-server
+bin/*
 *.swp
 *.o
 *.a
