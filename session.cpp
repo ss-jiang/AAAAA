@@ -106,9 +106,11 @@ std::vector<char> session::convert_buffer()
 {
   std::vector<char>converted_vector;
 
-  std::ostringstream ss;
-  ss << &buffer;
-  std::string s = ss.str();
+  std::string s{
+    buffers_begin(buffer.data()),
+    buffers_end(buffer.data())
+  };
+  
   
   std::copy(s.begin(), s.end(), std::back_inserter(converted_vector));
   return converted_vector;
