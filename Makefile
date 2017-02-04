@@ -39,6 +39,7 @@ HttpRequest.o: HttpRequest.h HttpRequest.cpp
 test: 
 	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
 	g++ -c utils.cpp $(LDFLAGS) $(CXXFLAGS)
+	g++ -c HttpRequest.cpp $(LDFLAGS) $(CXXFLAGS)
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
 	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o HttpRequest.o -o session_test ${LDFLAGS} ${CXXFLAGS}
@@ -49,6 +50,7 @@ test:
 	./server_test
 	./session_test
 	./utils_test
+	python2 echo_integration.py
 
 clean:
 	rm -f *.o *.gcno *.gcov *.gcda
