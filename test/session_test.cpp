@@ -1,6 +1,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <map>
 
 #include "gtest/gtest.h"
 #include "../config_parser/config_parser.h"
@@ -9,7 +10,8 @@
 
 TEST(BufferCreationTest, setup_obuffer) {
   boost::asio::io_service io_service;
-  session s(io_service);
+  std::map<std::string, std::string> functions;
+  session s(io_service, functions);
 
   boost::asio::streambuf out_streambuf;
   size_t sample_size = 5;
@@ -25,7 +27,9 @@ TEST(BufferCreationTest, setup_obuffer) {
 //tests that handle_write can successfully handle and error
 TEST(HandleWriteTest, handle_write_err) {
   boost::asio::io_service io_service;
-  session s(io_service);
+  std::map<std::string, std::string> functions;
+
+  session s(io_service, functions);
 
   boost::system::error_code error(4, boost::system::system_category());
   size_t bytes_transferred = 0;
