@@ -10,7 +10,7 @@ def client_thread(args):
 	TCP_IP = '127.0.0.1'
 	TCP_PORT = 8080
 	BUFFER_SIZE = 1024
-	MESSAGE = "Hello, World!\r\n\r\n"
+	MESSAGE = "GET /echo HTTP/1.1\r\n\r\n"
 
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -19,8 +19,10 @@ def client_thread(args):
 	data = s.recv(BUFFER_SIZE)
 	s.close()
 
-	if (data != "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nHello, World!\r\n\r\n"):
+	if (data != "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 18\r\n\r\nGET /echo HTTP/1.1\r\n\r\n"):
 		error_code[0] = 1
+		return
+
 	error_code[0] = 0
 
 if __name__ == "__main__":
