@@ -13,14 +13,13 @@ SERVER_TEST=test/server_test.cpp
 PARSER_TEST=test/config_parser_test.cc
 
 all: server.o session.o main.o config_parser.o utils.o HttpRequest.o
-	g++ -o web-server main.o server.o session.o config_parser.o utils.o HttpRequest.o $(LDFLAGS) $(CXXFLAGS)
-
+	g++ -o web-server main.o server.o session.o config_parser.o utils.o HttpRequest.o $(LDFLAGS) $(CXXFLAGS) 
 
 server.o: server.cpp server.h
 	g++ -c server.cpp $(LDFLAGS) $(CXXFLAGS)
 
 session.o: session.cpp session.h
-	g++ -c session.cpp $(LDFLAGS) $(CXXFLAGS)
+	g++ -c session.cpp $(LDFLAGS) $(CXXFLAGS) 
 
 config_parser.o: $(CP_LOC)config_parser.cc $(CP_LOC)config_parser.h
 	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
@@ -37,20 +36,23 @@ HttpRequest.o: HttpRequest.h HttpRequest.cpp
 .PHONY: clean, all, test
 
 test: 
-	g++ -c $(CP_LOC)config_parser.cc -g $(CXXFLAGS)
-	g++ -c utils.cpp $(LDFLAGS) $(CXXFLAGS)
-	g++ -c HttpRequest.cpp $(LDFLAGS) $(CXXFLAGS)
+	# Build web-server for integration test
+	make	
+	# Build gtest
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
+	# Build tests
 	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o HttpRequest.o -o session_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test ${LDFLAGS} ${CXXFLAGS}
+	# Run Tests
 	./config_parser_test
 	./server_test
 	./session_test
 	./utils_test
-	python2 echo_integration.py
+	python2 test/integration_test.py
 
 clean:
-	rm -f *.o *.gcno *.gcov *.gcda
+	# Note: be careful of make clean removing *_test
+	rm -f *.o *.gcno *.gcov *.gcda web-server *_test
