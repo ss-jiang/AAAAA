@@ -21,7 +21,7 @@ std::string http_response::to_string() {
 
     // body
     res_str += std::string(message_body.begin(), message_body.end());
-
+    
     return res_str; 
 }
 

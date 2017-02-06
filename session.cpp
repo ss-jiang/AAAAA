@@ -30,49 +30,27 @@ int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
   std::vector<char>message_request = convert_buffer();
+
   HttpRequest request(message_request);
   http_response response;
 
   std::string url = request.getUrl();  
   std::string function = get_function_from_url(url);
-  std::cout << "Function: " << function << std::endl;
 
-  if (!error){
-    if (function == "echo_dir")
-      handle_write(error, bytes_transferred);
-    else if (function == "static_dir") {
-      std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
-      std::cout << "Absolute Path: " << abs_path << std::endl;
-      
-      if (!file_exists(abs_path)) {
-        // TODO: 404 Error
-        std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
-        return -1;
-      } 
+  if (!error) {
 
-      // save content_type header based on requested file extension
-      std::string content_type = get_content_type(abs_path);
-      
-      // raw byte array
-      std::vector<char> to_send = read_file(abs_path);
-      
-      std::string status = "200 OK"; 
-      response.set_status(status);
-
-      std::string length_header = "Content-length: " + std::to_string(to_send.size());
-      response.add_header(length_header);
-      std::string type_header = "Content-type: " + content_type;
-      response.add_header(type_header); 
-
-      response.set_body(to_send); 
-
-      // write out response
-      write_string(response.to_string());
+    if (function == "echo_dir") {
+      handle_echo(error, bytes_transferred, response);
+    } else if (function == "static_dir") {
+      handle_static(url, response);
     }
     else {
-      // TODO: error case send error response
+      std::string status = "500 Internal Server Error";
+      response.set_status(status);
     }
 
+    // write out response
+    write_string(response.to_string());
   } 
   else{
     std::cerr << error.message() << std::endl;
@@ -80,6 +58,37 @@ int session::handle_request(const boost::system::error_code& error,
   }
   return 0;
 
+}
+
+// setup static file serving response
+int session::handle_static(std::string& url, http_response& response) {
+    std::cout << "========= Handling Static =========" << std::endl;
+    
+    std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
+    std::cout << "Serving file from: " << abs_path << std::endl;
+    
+    if (!file_exists(abs_path)) {
+      // TODO: 404 Error
+      std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
+      return -1;
+    } 
+
+    // save content_type header based on requested file extension
+    std::string content_type = get_content_type(abs_path);
+    
+    // raw byte array
+    std::vector<char> to_send = read_file(abs_path);
+    
+    std::string status = "200 OK"; 
+    response.set_status(status);
+
+    std::string length_header = "Content-Length: " + std::to_string(to_send.size());
+    response.add_header(length_header);
+    std::string type_header = "Content-Type: " + content_type;
+    response.add_header(type_header); 
+
+    response.set_body(to_send); 
+    return 0;
 }
 
 // gets current path of executable
@@ -170,51 +179,34 @@ void session::write_string(std::string send) {
   std::cout << "========= Ending Session =========" << std::endl;
 }
 
-int session::handle_write(const boost::system::error_code& error,
-    size_t bytes_transferred)
+int session::handle_echo(const boost::system::error_code& error,
+    size_t bytes_transferred, http_response& response)
 {
 
-  std::cout << "========= Writing out =========" << std::endl;
-
-  // output buffer
-  boost::asio::streambuf out_streambuf;
+  std::cout << "========= Handling Echo =========" << std::endl;
   
-  //sets up the output buffer with the correct headers
-  setup_obuffer(out_streambuf, bytes_transferred);
+  std::string status = "200 OK";
+  response.set_status(status);
   
   if (!error)
   {
-    boost::asio::write(socket_, out_streambuf);
-    
-    // wait for transmission Note: this could hang forever
-    tcdrain(socket_.native_handle());
+    // minus 4 for the double carriage return
+    std::string length_header = "Content-Length: " + std::to_string(bytes_transferred - 4);
+    response.add_header(length_header);
+    std::string type_header = "Content-Type: text/plain";
+    response.add_header(type_header);
 
-    // close socket
-    boost::system::error_code ec;
-    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-    socket_.close();
-    
-    std::cout << "========= Ending Session =========" << std::endl;
+    std::vector<char> to_send = convert_buffer();
+    response.set_body(to_send);
   }
   else
   {
+    status = "500 Internal Server Error";
+    response.set_status(status);
     std::cerr << error.message() << std::endl;
     return -1;
   }
   return 0;
-}
-
-void session::setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred)
-{
-  std::ostream out(&out_streambuf);
-  // setup headers
-  out << "HTTP/1.1 200 OK\r\n";
-  out << "Content-Type: text/plain\r\n";
-  // minus 4 for the double carriage return
-  out << "Content-Length: " << bytes_transferred - 4 << "\r\n\r\n";
-  
-  // echo message under headers
-  out << &buffer;
 }
 
 std::vector<char> session::convert_buffer()

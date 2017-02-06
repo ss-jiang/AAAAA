@@ -5,6 +5,9 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <map>
+
+#include "http_response.h"
+
 // for tcp type
 using boost::asio::ip::tcp;
 
@@ -14,9 +17,13 @@ public:
   session(boost::asio::io_service& io_service, std::map <std::string, std::string> function_mapping);
   tcp::socket& socket();
   void start();
-  int handle_write(const boost::system::error_code& error, size_t bytes_transferred);
-  void setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred);
+  // sets up echo response object
+  int handle_echo(const boost::system::error_code& error, size_t bytes_transferred, http_response& response);
+  // sets up static response object
+  int handle_static(std::string& url, http_response& response);
+  // handles requests by seeing which type of response is required
   int handle_request(const boost::system::error_code& error, size_t bytes_transferred);
+  // writes out a string to the socket and closes the connection
   void write_string(std::string send);
 
 private:
