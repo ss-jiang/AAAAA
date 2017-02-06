@@ -1,6 +1,9 @@
 #include "session.h"
-#include <termios.h>
 #include "HttpRequest.h"
+
+#include <termios.h>
+#include <unistd.h>
+#include <sys/stat.h>
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::string> function_mapping)
@@ -27,22 +30,30 @@ int session::handle_request(const boost::system::error_code& error,
   std::vector<char>message_request = convert_buffer();
   HttpRequest request(message_request);
 
-  std::string url = request.getUrl();
+  std::string url = request.getUrl();  
   std::string function = get_function_from_url(url);
-
   std::cout << "Function: " << function << std::endl;
 
   if (!error){
     if (function == "echo_dir")
       handle_write(error, bytes_transferred);
-    else if (function == "static_dir"){
-      //stuff to handle static file handling goes here. 
-      //we should modularize our code so there are separate classes 
-      //for sending static files and for sending echos
-      std::cout << "Static File Handling Yet To Be Implemented" << std::endl;
+    else if (function == "static_dir") {
+      std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
+      std::cout << "Absolute Path: " << abs_path << std::endl;
+      
+      if (!file_exists(abs_path)) {
+        // TODO: 404 Error
+        std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
+      } 
+
+      // save content_type header based on requested file extension
+      std::string content_type = get_content_type(abs_path);
+        
+      // raw byte array
+      // std::vector<char> to_send = read_file(abs_path);
     }
-    else{
-      //error case send error response
+    else {
+      // TODO: error case send error response
     }
 
   } 
@@ -53,6 +64,45 @@ int session::handle_request(const boost::system::error_code& error,
   return 0;
 
 }
+
+// gets current path of executable
+std::string session::get_exec_path() {
+    // max path is 2048 characters in file directory
+    const int MAX_PATH = 2048;
+    char buffer[MAX_PATH];
+    if (getcwd(buffer, sizeof(buffer)) != NULL) {
+        return std::string(buffer);
+    }    
+    else {
+        std::cerr << "Error: unable to find current working directory" << std::endl;
+    }
+    return "";
+}
+
+// checks if file exists
+bool session::file_exists(std::string filename) {
+  struct stat buffer;   
+  return (stat(filename.c_str(), &buffer) == 0); 
+}
+
+// // gets content-type based on the file extension of requested file
+// std::string get_content_type(char const* filename) {
+//     // TODO:
+// }
+
+//// reads raw file into vector of characters
+//std::vector<char> read_file(char const* filename)
+//{
+//    ifstream ifs(filename, ios::binary|ios::ate);
+//    ifstream::pos_type pos = ifs.tellg();
+//
+//    std::vector<char>  result(pos);
+//
+//    ifs.seekg(0, ios::beg);
+//    ifs.read(&result[0], pos);
+//
+//    return result;
+//}
 
 
 int session::handle_write(const boost::system::error_code& error,
@@ -116,23 +166,37 @@ std::vector<char> session::convert_buffer()
   return converted_vector;
 }
 
+std::string session::get_path_from_url(std::string url) {
+  // Assumption: url must be prefixed with "/static/" at this point 
+  //             get_function_from_url has already been called on url
+  int second_slash_pos = url.find("/", 1);
+  // from second slash to end of string is path
+  std::string path = url.substr(second_slash_pos, std::string::npos);
+
+  return path;
+}
+
 std::string session::get_function_from_url(std::string url)
 {
   std::string function = "";
+  // TODO: log these errors
   if (url.length() == 0)
-    return function;
+    return "Error: Blank Function Field";
   if (url.length() == 1 && url == "/")
     return "/";
 
   int second_slash_pos = url.find("/", 1);
+  // string between first and second slashs
   std::string dir = url.substr(0, second_slash_pos);
 
   std::map<std::string, std::string>::iterator it = function_mapping.find(dir);
+  // if valid function found
   if (it != function_mapping.end()){
      function = it->second;
   }
   else{
-    function = "error";
+    // TODO: log these errors
+    function = "Error in determining function";
   }
   return function;
 }
