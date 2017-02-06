@@ -1,5 +1,6 @@
 #include "session.h"
 #include "HttpRequest.h"
+#include "http_response.h"
 
 #include <termios.h>
 #include <unistd.h>
@@ -30,6 +31,7 @@ int session::handle_request(const boost::system::error_code& error,
 
   std::vector<char>message_request = convert_buffer();
   HttpRequest request(message_request);
+  http_response response;
 
   std::string url = request.getUrl();  
   std::string function = get_function_from_url(url);
@@ -52,10 +54,18 @@ int session::handle_request(const boost::system::error_code& error,
       
       // raw byte array
       std::vector<char> to_send = read_file(abs_path);
-    
-      for (unsigned int i = 0; i < to_send.size(); i++) {
-        std::cout << to_send[i];
-      }
+      
+      std::string status = "200 OK"; 
+      response.set_status(status);
+
+      std::string length_header = "Content-length: " + std::to_string(to_send.size());
+      response.add_header(length_header);
+      std::string type_header = "Content-type: " + content_type;
+      response.add_header(type_header); 
+
+      response.set_body(to_send); 
+
+      std::cout << response.to_string() << std::endl;
     }
     else {
       // TODO: error case send error response

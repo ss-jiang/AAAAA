@@ -10,9 +10,12 @@ public:
     http_response();
     // returns string representation of response for sending
     std::string to_string();
+    void set_status(std::string &status);
+    void add_header(std::string &header);
+    void set_body(std::vector<char> &body);
 
+private:
     // HTTP headers from HTTP specification
-    // Note: Public by design since this is essentially a struct
     const std::string HTTP_VER = "HTTP/1.1";
     std::string status_code;
     // Note: we may need to differentiate between general/entity/... headers later

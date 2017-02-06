@@ -25,3 +25,14 @@ std::string http_response::to_string() {
     return res_str; 
 }
 
+void http_response::set_status(std::string &status) {
+    status_code = status;
+}
+
+void http_response::add_header(std::string &header) {
+    headers.push_back(header);
+}
+
+void http_response::set_body(std::vector<char> &body) {
+    message_body = body;
+}
