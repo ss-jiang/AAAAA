@@ -4,6 +4,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <fstream>
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::string> function_mapping)
@@ -48,9 +49,13 @@ int session::handle_request(const boost::system::error_code& error,
 
       // save content_type header based on requested file extension
       std::string content_type = get_content_type(abs_path);
-        
+      
       // raw byte array
-      // std::vector<char> to_send = read_file(abs_path);
+      std::vector<char> to_send = read_file(abs_path);
+    
+      for (unsigned int i = 0; i < to_send.size(); i++) {
+        std::cout << to_send[i];
+      }
     }
     else {
       // TODO: error case send error response
@@ -81,28 +86,54 @@ std::string session::get_exec_path() {
 
 // checks if file exists
 bool session::file_exists(std::string filename) {
-  struct stat buffer;   
-  return (stat(filename.c_str(), &buffer) == 0); 
+    struct stat buffer;   
+    return (stat(filename.c_str(), &buffer) == 0); 
 }
 
-// // gets content-type based on the file extension of requested file
-// std::string get_content_type(char const* filename) {
-//     // TODO:
-// }
+// gets content-type based on the file extension of requested file
+std::string session::get_content_type(std::string filename) {
+    unsigned int i;
+    
+    // search for either last period or last slash in filename
+    for (i = filename.size() - 1; i >= 0; i--) {
+        // file with no extension type
+        if (filename[i] == '/') {
+            return "text/plain";
+        } else if (filename[i] == '.') { // found pos of beginning of extension
+            break;
+        }
+    }
 
-//// reads raw file into vector of characters
-//std::vector<char> read_file(char const* filename)
-//{
-//    ifstream ifs(filename, ios::binary|ios::ate);
-//    ifstream::pos_type pos = ifs.tellg();
-//
-//    std::vector<char>  result(pos);
-//
-//    ifs.seekg(0, ios::beg);
-//    ifs.read(&result[0], pos);
-//
-//    return result;
-//}
+    std::string ext = filename.substr(i + 1, std::string::npos);
+    std::string content_type;
+    
+    // based on ext decide content_type header
+    if (ext == "html") {
+        content_type = "text/html";
+    } else if (ext == "jpg") {
+        content_type = "image/jpeg";
+    } else if (ext == "pdf") {
+        content_type = "application/pdf";
+    } else {
+        content_type = "text/plain";
+    }
+    return content_type;
+}
+
+
+// reads raw file into vector of characters
+std::vector<char> session::read_file(std::string filename)
+{
+    std::ifstream ifs(filename, std::ios::binary|std::ios::ate);
+    std::ifstream::pos_type pos = ifs.tellg();
+
+    std::vector<char>  result(pos);
+
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(&result[0], pos);
+
+    return result;
+}
 
 
 int session::handle_write(const boost::system::error_code& error,
@@ -160,7 +191,6 @@ std::vector<char> session::convert_buffer()
     buffers_begin(buffer.data()),
     buffers_end(buffer.data())
   };
-  
   
   std::copy(s.begin(), s.end(), std::back_inserter(converted_vector));
   return converted_vector;

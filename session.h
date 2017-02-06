@@ -26,6 +26,10 @@ private:
   std::string get_exec_path();
   // true if file exists
   bool file_exists(std::string filename);
+  // returns content type header based on file extension
+  std::string get_content_type(std::string filename);
+  // reads raw file into vector of characters
+  std::vector<char> read_file(std::string filename);
   tcp::socket socket_;
   std::map <std::string, std::string> function_mapping;
   boost::asio::streambuf buffer;
