@@ -47,6 +47,7 @@ int session::handle_request(const boost::system::error_code& error,
       if (!file_exists(abs_path)) {
         // TODO: 404 Error
         std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
+        return -1;
       } 
 
       // save content_type header based on requested file extension
@@ -65,7 +66,8 @@ int session::handle_request(const boost::system::error_code& error,
 
       response.set_body(to_send); 
 
-      std::cout << response.to_string() << std::endl;
+      // write out response
+      write_string(response.to_string());
     }
     else {
       // TODO: error case send error response
@@ -145,6 +147,28 @@ std::vector<char> session::read_file(std::string filename)
     return result;
 }
 
+// given a string, writes out to socket and ends connection
+void session::write_string(std::string send) {
+    
+  std::cout << "========= Writing out =========" << std::endl;
+
+  // output buffer
+  boost::asio::streambuf out_streambuf;
+  std::ostream out(&out_streambuf);
+  out << send;  
+
+  boost::asio::write(socket_, out_streambuf);
+  
+  // wait for transmission Note: this could hang forever
+  tcdrain(socket_.native_handle());
+
+  // close socket
+  boost::system::error_code ec;
+  socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+  socket_.close();
+  
+  std::cout << "========= Ending Session =========" << std::endl;
+}
 
 int session::handle_write(const boost::system::error_code& error,
     size_t bytes_transferred)

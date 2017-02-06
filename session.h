@@ -17,6 +17,7 @@ public:
   int handle_write(const boost::system::error_code& error, size_t bytes_transferred);
   void setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred);
   int handle_request(const boost::system::error_code& error, size_t bytes_transferred);
+  void write_string(std::string send);
 
 private:
   std::vector<char> convert_buffer();
