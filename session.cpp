@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fstream>
+#include <iostream>
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::string> function_mapping)

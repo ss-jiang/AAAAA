@@ -36,6 +36,10 @@ HttpRequest.o: HttpRequest.h HttpRequest.cpp
 http_response.o: http_response.h http_response.cpp
 	g++ -c http_response.cpp $(LDFLAGS) $(CXXFLAGS)
 
+handler.o: handler.h handler.cpp
+	g++ -c handler.cpp $(LDFLAGS) $(CXXFLAGS)
+
+
 .PHONY: clean, all, test
 
 test: 
