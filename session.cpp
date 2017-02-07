@@ -1,12 +1,13 @@
 #include "session.h"
 #include "HttpRequest.h"
 #include "http_response.h"
+#include "handler.h"
 
 #include <termios.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <fstream>
 #include <iostream>
+#include <memory>
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::string> function_mapping)
@@ -33,23 +34,26 @@ int session::handle_request(const boost::system::error_code& error,
   std::vector<char>message_request = convert_buffer();
 
   HttpRequest request(message_request);
-  http_response response;
 
   std::string url = request.getUrl();  
   std::string function = get_function_from_url(url);
-
+  std::unique_ptr<handler> handler_ptr;
+  
+  std::cout << "Function: " << function << std::endl;
   if (!error) {
-
+    
     if (function == "echo_dir") {
-      handle_echo(error, bytes_transferred, response);
+      handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
     } else if (function == "static_dir") {
-      handle_static(url, response);
+      handler_ptr = std::unique_ptr<handler>(new static_handler(url));
     }
     else {
+      // TODO: Handle this error
       std::string status = "500 Internal Server Error";
-      response.set_status(status);
+      return -1;
     }
-
+    
+    http_response response = handler_ptr->handle_request();
     // write out response
     write_string(response.to_string());
   } 
@@ -59,102 +63,6 @@ int session::handle_request(const boost::system::error_code& error,
   }
   return 0;
 
-}
-
-// setup static file serving response
-int session::handle_static(std::string& url, http_response& response) {
-    std::cout << "========= Handling Static =========" << std::endl;
-    
-    std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
-    std::cout << "Serving file from: " << abs_path << std::endl;
-    
-    if (!file_exists(abs_path)) {
-      // TODO: 404 Error
-      std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
-      return -1;
-    } 
-
-    // save content_type header based on requested file extension
-    std::string content_type = get_content_type(abs_path);
-    
-    // raw byte array
-    std::vector<char> to_send = read_file(abs_path);
-    
-    std::string status = "200 OK"; 
-    response.set_status(status);
-
-    std::string length_header = "Content-Length: " + std::to_string(to_send.size());
-    response.add_header(length_header);
-    std::string type_header = "Content-Type: " + content_type;
-    response.add_header(type_header); 
-
-    response.set_body(to_send); 
-    return 0;
-}
-
-// gets current path of executable
-std::string session::get_exec_path() {
-    // max path is 2048 characters in file directory
-    const int MAX_PATH = 2048;
-    char buffer[MAX_PATH];
-    if (getcwd(buffer, sizeof(buffer)) != NULL) {
-        return std::string(buffer);
-    }    
-    else {
-        std::cerr << "Error: unable to find current working directory" << std::endl;
-    }
-    return "";
-}
-
-// checks if file exists
-bool session::file_exists(std::string filename) {
-    struct stat buffer;   
-    return (stat(filename.c_str(), &buffer) == 0); 
-}
-
-// gets content-type based on the file extension of requested file
-std::string session::get_content_type(std::string filename) {
-    unsigned int i;
-    
-    // search for either last period or last slash in filename
-    for (i = filename.size() - 1; i >= 0; i--) {
-        // file with no extension type
-        if (filename[i] == '/') {
-            return "text/plain";
-        } else if (filename[i] == '.') { // found pos of beginning of extension
-            break;
-        }
-    }
-
-    std::string ext = filename.substr(i + 1, std::string::npos);
-    std::string content_type;
-    
-    // based on ext decide content_type header
-    if (ext == "html") {
-        content_type = "text/html";
-    } else if (ext == "jpg") {
-        content_type = "image/jpeg";
-    } else if (ext == "pdf") {
-        content_type = "application/pdf";
-    } else {
-        content_type = "text/plain";
-    }
-    return content_type;
-}
-
-
-// reads raw file into vector of characters
-std::vector<char> session::read_file(std::string filename)
-{
-    std::ifstream ifs(filename, std::ios::binary|std::ios::ate);
-    std::ifstream::pos_type pos = ifs.tellg();
-
-    std::vector<char>  result(pos);
-
-    ifs.seekg(0, std::ios::beg);
-    ifs.read(&result[0], pos);
-
-    return result;
 }
 
 // given a string, writes out to socket and ends connection
@@ -180,36 +88,6 @@ void session::write_string(std::string send) {
   std::cout << "========= Ending Session =========" << std::endl;
 }
 
-int session::handle_echo(const boost::system::error_code& error,
-    size_t bytes_transferred, http_response& response)
-{
-
-  std::cout << "========= Handling Echo =========" << std::endl;
-  
-  std::string status = "200 OK";
-  response.set_status(status);
-  
-  if (!error)
-  {
-    // minus 4 for the double carriage return
-    std::string length_header = "Content-Length: " + std::to_string(bytes_transferred - 4);
-    response.add_header(length_header);
-    std::string type_header = "Content-Type: text/plain";
-    response.add_header(type_header);
-
-    std::vector<char> to_send = convert_buffer();
-    response.set_body(to_send);
-  }
-  else
-  {
-    status = "500 Internal Server Error";
-    response.set_status(status);
-    std::cerr << error.message() << std::endl;
-    return -1;
-  }
-  return 0;
-}
-
 std::vector<char> session::convert_buffer()
 {
   std::vector<char>converted_vector;
@@ -223,15 +101,7 @@ std::vector<char> session::convert_buffer()
   return converted_vector;
 }
 
-std::string session::get_path_from_url(std::string url) {
-  // Assumption: url must be prefixed with "/static/" at this point 
-  //             get_function_from_url has already been called on url
-  int second_slash_pos = url.find("/", 1);
-  // from second slash to end of string is path
-  std::string path = url.substr(second_slash_pos, std::string::npos);
 
-  return path;
-}
 
 std::string session::get_function_from_url(std::string url)
 {
@@ -253,7 +123,8 @@ std::string session::get_function_from_url(std::string url)
   }
   else{
     // TODO: log these errors
-    function = "Error in determining function";
+    std::cerr << "Error in determining function" << std::endl;
+    std::cerr << "URL causing error :" << url << std::endl;
   }
   return function;
 }
