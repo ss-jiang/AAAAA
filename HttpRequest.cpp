@@ -54,13 +54,15 @@ int HttpRequest::decodeFirstLine()
 		}	
 	}
 
-	cout << "this is the method " << method << endl;
+	cout << "Method: " << method << endl;
 	if (method != "GET" && method != "POST") {
+            // TODO: Log what the error was that caused this
 			cerr << "Invalid method in request line!" << endl;
 			setErr(501);
 	}
 
 	if (version != "HTTP/1.0" && version != "HTTP/1.1") {
+        // TODO: Log what the version was that caused this
 		cerr << "Unsupported version in request line!" << endl;
 		setErr(505);
 	}

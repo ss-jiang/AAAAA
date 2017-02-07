@@ -1,6 +1,13 @@
 #include "session.h"
-#include <termios.h>
 #include "HttpRequest.h"
+#include "http_response.h"
+#include "handler.h"
+
+#include <termios.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <iostream>
+#include <memory>
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::string> function_mapping)
@@ -25,26 +32,30 @@ int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
   std::vector<char>message_request = convert_buffer();
+
   HttpRequest request(message_request);
 
-  std::string url = request.getUrl();
+  std::string url = request.getUrl();  
   std::string function = get_function_from_url(url);
-
+  std::unique_ptr<handler> handler_ptr;
+  
   std::cout << "Function: " << function << std::endl;
-
-  if (!error){
-    if (function == "echo_dir")
-      handle_write(error, bytes_transferred);
-    else if (function == "static_dir"){
-      //stuff to handle static file handling goes here. 
-      //we should modularize our code so there are separate classes 
-      //for sending static files and for sending echos
-      std::cout << "Static File Handling Yet To Be Implemented" << std::endl;
+  if (!error) {
+    
+    if (function == "echo_dir") {
+      handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
+    } else if (function == "static_dir") {
+      handler_ptr = std::unique_ptr<handler>(new static_handler(url));
     }
-    else{
-      //error case send error response
+    else {
+      // TODO: Handle this error
+      std::string status = "500 Internal Server Error";
+      return -1;
     }
-
+    
+    http_response response = handler_ptr->handle_request();
+    // write out response
+    write_string(response.to_string());
   } 
   else{
     std::cerr << error.message() << std::endl;
@@ -54,52 +65,27 @@ int session::handle_request(const boost::system::error_code& error,
 
 }
 
-
-int session::handle_write(const boost::system::error_code& error,
-    size_t bytes_transferred)
-{
-
+// given a string, writes out to socket and ends connection
+void session::write_string(std::string send) {
+    
   std::cout << "========= Writing out =========" << std::endl;
 
   // output buffer
   boost::asio::streambuf out_streambuf;
-  
-  //sets up the output buffer with the correct headers
-  setup_obuffer(out_streambuf, bytes_transferred);
-  
-  if (!error)
-  {
-    boost::asio::write(socket_, out_streambuf);
-    
-    // wait for transmission Note: this could hang forever
-    tcdrain(socket_.native_handle());
-
-    // close socket
-    boost::system::error_code ec;
-    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
-    socket_.close();
-    
-    std::cout << "========= Ending Session =========" << std::endl;
-  }
-  else
-  {
-    std::cerr << error.message() << std::endl;
-    return -1;
-  }
-  return 0;
-}
-
-void session::setup_obuffer(boost::asio::streambuf& out_streambuf, size_t bytes_transferred)
-{
   std::ostream out(&out_streambuf);
-  // setup headers
-  out << "HTTP/1.1 200 OK\r\n";
-  out << "Content-Type: text/plain\r\n";
-  // minus 4 for the double carriage return
-  out << "Content-Length: " << bytes_transferred - 4 << "\r\n\r\n";
+  out << send;  
+
+  boost::asio::write(socket_, out_streambuf);
   
-  // echo message under headers
-  out << &buffer;
+  // wait for transmission Note: this could hang forever
+  tcdrain(socket_.native_handle());
+
+  // close socket
+  boost::system::error_code ec;
+  socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+  socket_.close();
+  
+  std::cout << "========= Ending Session =========" << std::endl;
 }
 
 std::vector<char> session::convert_buffer()
@@ -111,28 +97,34 @@ std::vector<char> session::convert_buffer()
     buffers_end(buffer.data())
   };
   
-  
   std::copy(s.begin(), s.end(), std::back_inserter(converted_vector));
   return converted_vector;
 }
 
+
+
 std::string session::get_function_from_url(std::string url)
 {
   std::string function = "";
+  // TODO: log these errors
   if (url.length() == 0)
-    return function;
+    return "Error: Blank Function Field";
   if (url.length() == 1 && url == "/")
     return "/";
 
   int second_slash_pos = url.find("/", 1);
+  // string between first and second slashs
   std::string dir = url.substr(0, second_slash_pos);
 
   std::map<std::string, std::string>::iterator it = function_mapping.find(dir);
+  // if valid function found
   if (it != function_mapping.end()){
      function = it->second;
   }
   else{
-    function = "error";
+    // TODO: log these errors
+    std::cerr << "Error in determining function" << std::endl;
+    std::cerr << "URL causing error :" << url << std::endl;
   }
   return function;
 }
