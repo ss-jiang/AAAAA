@@ -20,7 +20,8 @@ def client_thread(args):
 	s.close()
 
 	if (data != "HTTP/1.1 200 OK\r\nContent-Length: 18\r\nContent-Type: text/plain\r\n\r\nGET /echo HTTP/1.1\r\n\r\n"):
-		error_code[0] = 1
+	    	print "Failure response: ", repr(data)
+                error_code[0] = 1
 		return
 
 	error_code[0] = 0

@@ -16,7 +16,8 @@ http_response echo_handler::handle_request() {
   std::string status = "200 OK";
   response.set_status(status);
   
-  std::string length_header = "Content-Length: " + std::to_string(to_send.size());
+  // -4 for the carriage returns  
+  std::string length_header = "Content-Length: " + std::to_string(to_send.size()-4);
   response.add_header(length_header);
   std::string type_header = "Content-Type: text/plain";
   response.add_header(type_header);
