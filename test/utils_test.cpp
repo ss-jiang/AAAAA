@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <map>
 
 #include "gtest/gtest.h"
 #include "../config_parser/config_parser.h"
@@ -19,4 +20,7 @@ TEST(MainTest, setup_server_info_struct) {
   ServerInfo info = utils::setup_info_struct(config);
 
   EXPECT_EQ(8080, info.port);
+  EXPECT_EQ("static_dir", info.functions["/public"]);
+  EXPECT_EQ("echo_dir", info.functions["/echo"]);
 }
+
