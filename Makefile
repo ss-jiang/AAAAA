@@ -11,6 +11,7 @@ SESSION_TEST=test/session_test.cpp session.cpp
 UTILS_TEST=test/utils_test.cpp 
 SERVER_TEST=test/server_test.cpp
 PARSER_TEST=test/config_parser_test.cc
+HANDLER_TEST=test/handler_test.cpp
 
 all: server.o session.o main.o config_parser.o utils.o HttpRequest.o http_response.o handler.o
 	g++ -o web-server main.o server.o session.o config_parser.o utils.o HttpRequest.o http_response.o handler.o $(LDFLAGS) $(CXXFLAGS) 
@@ -52,7 +53,10 @@ test:
 	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o http_response.o handler.o -o handler_test ${LDFLAGS} ${CXXFLAGS}
+
 	# Run Tests
+	./handler_test
 	./config_parser_test
 	./server_test
 	./session_test
