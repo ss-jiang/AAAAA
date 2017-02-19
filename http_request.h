@@ -5,6 +5,10 @@
 #include <vector>
 #include <memory>
 
+// Represents an HTTP Request.
+//
+// Usage:
+//   auto request = Request::Parse(raw_request);
 class Request
 {
   public:

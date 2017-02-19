@@ -4,6 +4,16 @@
 #include <string>
 #include <vector>
 
+// Represents an HTTP response.
+//
+// Usage:
+//   Response r;
+//   r.SetStatus(RESPONSE_200);
+//   r.SetBody(...);
+//   return r.ToString();
+//
+// Constructed by the RequestHandler, after which the server should call ToString
+// to serialize.
 class Response {
 
 public:
