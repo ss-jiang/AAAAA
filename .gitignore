@@ -6,3 +6,4 @@ bin/*
 *.gcda
 *.gcno
 *.a
+*_test

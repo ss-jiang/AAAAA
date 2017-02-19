@@ -23,9 +23,9 @@ public:
   void write_string(std::string send);
 
 private:
-  std::vector<char> convert_buffer();
+  std::string convert_buffer();
   std::string get_function_from_url(std::string url);
-  
+
   tcp::socket socket_;
   std::map <std::string, std::string> function_mapping;
   boost::asio::streambuf buffer;

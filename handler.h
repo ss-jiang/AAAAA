@@ -3,26 +3,51 @@
 
 #include <boost/asio.hpp>
 #include "http_response.h"
+#include "http_request.h"
+#include "config_parser/config_parser.h"
 #include <vector>
 
-class handler {
-public:
-    // pure virtual function for handling a request
-    virtual http_response handle_request() = 0;
+// Represents the parent of all request handlers. Implementation
+// is long lived and created at server constrution.
+class RequestHandler {
+ public:
+  // TODO: add to this as needed (right now glorified bool)
+  enum Status {
+    OK,
+    FAIL
+  };
+
+  // Initializes the handler. Returns a response code indicating success or
+  // failure condition.
+  // uri_prefix is the value in the config file that this handler will run for.
+  // config is the contents of the child block for this handler ONLY.
+  virtual Status Init(const std::string& uri_prefix,
+                      const NginxConfig& config) = 0;
+
+  // Handles an HTTP request, and generates a response. Returns a response code
+  // indicating success or failure condition. If ResponseCode is not OK, the
+  // contents of the response object are undefined, and the server will return
+  // HTTP code 500.
+  virtual Status HandleRequest(const Request& request,
+                               Response* response) = 0;
 };
 
-class echo_handler : public handler {
+class EchoHandler : public RequestHandler {
 public:
-    echo_handler(std::vector<char>& request);
-    http_response handle_request();
+    Status Init(const std::string& uri_prefix,
+                      const NginxConfig& config);
+    Status HandleRequest(const Request& request,
+                               Response* response);
 private:
-    std::vector<char> to_send;
+    std::string to_send;
 };
 
-class static_handler : public handler {
+class StaticHandler : public RequestHandler {
 public:
-    static_handler(std::string curr_url);
-    http_response handle_request();
+    Status Init(const std::string& uri_prefix,
+                      const NginxConfig& config);
+    Status HandleRequest(const Request& request,
+                               Response* response);
 
 private:
     std::string url;
