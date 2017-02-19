@@ -1,3 +1,11 @@
-port 8080;
-echo_dir /echo;
-static_dir /static; 
+# This is a comment
+port 2020;
+
+path / StaticHandler {
+  root /public;
+}
+
+path /echo EchoHandler {}
+
+# Default response handler if no handlers match.
+default NotFoundHandler {}
