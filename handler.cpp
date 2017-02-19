@@ -5,42 +5,18 @@
 #include <vector>
 #include <string>
 
-// echo_handler::echo_handler(std::vector<char>& request) {
-//     to_send = request;
-// }
 
-// http_response echo_handler::handle_request() {
-//   http_response response;
-//   std::cout << "========= Handling Echo =========" << std::endl;
+std::string StaticHandler::get_path_from_url(std::string url) {
+  // Assumption: url must be prefixed with "/static/" at this point
+  //             get_function_from_url has already been called on url
+  int second_slash_pos = url.find("/", 1);
+  // from second slash to end of string is path
+  std::string path = url.substr(second_slash_pos, std::string::npos);
 
-//   std::string status = "200 OK";
-//   response.set_status(status);
+  return path;
+}
 
-//   // -4 for the carriage returns
-//   std::string length_header = "Content-Length: " + std::to_string(to_send.size()-4);
-//   response.add_header(length_header);
-//   std::string type_header = "Content-Type: text/plain";
-//   response.add_header(type_header);
-
-//   response.set_body(to_send);
-//   return response;
-// }
-
-// static_handler::static_handler(std::string curr_url) {
-//     url = curr_url;
-// }
-
-// std::string static_handler::get_path_from_url(std::string url) {
-//   // Assumption: url must be prefixed with "/static/" at this point
-//   //             get_function_from_url has already been called on url
-//   int second_slash_pos = url.find("/", 1);
-//   // from second slash to end of string is path
-//   std::string path = url.substr(second_slash_pos, std::string::npos);
-
-//   return path;
-// }
-
-// http_response static_handler::handle_request() {
+// http_response StaticHandler::handle_request() {
 //     http_response response;
 //     std::cout << "========= Handling Static =========" << std::endl;
 
@@ -71,67 +47,67 @@
 //     return response;
 // }
 
-// // gets current path of executable
-// std::string static_handler::get_exec_path() {
-//     // max path is 2048 characters in file directory
-//     const int MAX_PATH = 2048;
-//     char buffer[MAX_PATH];
-//     if (getcwd(buffer, sizeof(buffer)) != NULL) {
-//         return std::string(buffer);
-//     }
-//     else {
-//         std::cerr << "Error: unable to find current working directory" << std::endl;
-//     }
-//     return "";
-// }
+// gets current path of executable
+std::string StaticHandler::get_exec_path() {
+    // max path is 2048 characters in file directory
+    const int MAX_PATH = 2048;
+    char buffer[MAX_PATH];
+    if (getcwd(buffer, sizeof(buffer)) != NULL) {
+        return std::string(buffer);
+    }
+    else {
+        std::cerr << "Error: unable to find current working directory" << std::endl;
+    }
+    return "";
+}
 
-// // checks if file exists
-// bool static_handler::file_exists(std::string filename) {
-//     struct stat buffer;
-//     return (stat(filename.c_str(), &buffer) == 0);
-// }
+// checks if file exists
+bool StaticHandler::file_exists(std::string filename) {
+    struct stat buffer;
+    return (stat(filename.c_str(), &buffer) == 0);
+}
 
-// // gets content-type based on the file extension of requested file
-// std::string static_handler::get_content_type(std::string filename) {
-//     unsigned int i;
+// gets content-type based on the file extension of requested file
+std::string StaticHandler::get_content_type(std::string filename) {
+    unsigned int i;
 
-//     // search for either last period or last slash in filename
-//     for (i = filename.size() - 1; i >= 0; i--) {
-//         // file with no extension type
-//         if (filename[i] == '/') {
-//             return "text/plain";
-//         } else if (filename[i] == '.') { // found pos of beginning of extension
-//             break;
-//         }
-//     }
+    // search for either last period or last slash in filename
+    for (i = filename.size() - 1; i >= 0; i--) {
+        // file with no extension type
+        if (filename[i] == '/') {
+            return "text/plain";
+        } else if (filename[i] == '.') { // found pos of beginning of extension
+            break;
+        }
+    }
 
-//     std::string ext = filename.substr(i + 1, std::string::npos);
-//     std::string content_type;
+    std::string ext = filename.substr(i + 1, std::string::npos);
+    std::string content_type;
 
-//     // based on ext decide content_type header
-//     if (ext == "html") {
-//         content_type = "text/html";
-//     } else if (ext == "jpg") {
-//         content_type = "image/jpeg";
-//     } else if (ext == "pdf") {
-//         content_type = "application/pdf";
-//     } else {
-//         content_type = "text/plain";
-//     }
-//     return content_type;
-// }
+    // based on ext decide content_type header
+    if (ext == "html") {
+        content_type = "text/html";
+    } else if (ext == "jpg") {
+        content_type = "image/jpeg";
+    } else if (ext == "pdf") {
+        content_type = "application/pdf";
+    } else {
+        content_type = "text/plain";
+    }
+    return content_type;
+}
 
 
-// // reads raw file into vector of characters
-// std::vector<char> static_handler::read_file(std::string filename)
-// {
-//     std::ifstream ifs(filename, std::ios::binary|std::ios::ate);
-//     std::ifstream::pos_type pos = ifs.tellg();
+// reads raw file into vector of characters
+std::vector<char> StaticHandler::read_file(std::string filename)
+{
+    std::ifstream ifs(filename, std::ios::binary|std::ios::ate);
+    std::ifstream::pos_type pos = ifs.tellg();
 
-//     std::vector<char>  result(pos);
+    std::vector<char>  result(pos);
 
-//     ifs.seekg(0, std::ios::beg);
-//     ifs.read(&result[0], pos);
+    ifs.seekg(0, std::ios::beg);
+    ifs.read(&result[0], pos);
 
-//     return result;
-// }
+    return result;
+}
