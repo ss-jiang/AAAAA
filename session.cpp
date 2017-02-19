@@ -31,9 +31,7 @@ void session::start()
 int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
-  // TODO convert to string
   std::string message_request = convert_buffer();
-
   auto request = Request::Parse(message_request);
 
   // std::unique_ptr<handler> handler_ptr;
