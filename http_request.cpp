@@ -1,4 +1,4 @@
-#include "HttpRequest.h"
+#include "http_request.h"
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -20,13 +20,13 @@ int HttpRequest::decodeFirstLine()
 {
 	int spaces = 0;
 
-	string method; 
-	string url; 
+	string method;
+	string url;
 	string version;
 
 	setErr(false);
 
-	for (unsigned int i=0; i < message_request.size(); i++)	
+	for (unsigned int i=0; i < message_request.size(); i++)
 	{
 		if (message_request[i] == '\r')
 			break;
@@ -40,7 +40,7 @@ int HttpRequest::decodeFirstLine()
 		     continue;
 		}
 
-		switch(spaces)	
+		switch(spaces)
 		{
 		case 0:
 			method += message_request[i];
@@ -51,7 +51,7 @@ int HttpRequest::decodeFirstLine()
 		case 2:
 			version += message_request[i];
 			break;
-		}	
+		}
 	}
 
 	cout << "Method: " << method << endl;

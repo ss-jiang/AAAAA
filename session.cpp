@@ -1,5 +1,5 @@
 #include "session.h"
-#include "HttpRequest.h"
+#include "http_request.h"
 #include "http_response.h"
 #include "handler.h"
 
@@ -21,7 +21,7 @@ tcp::socket& session::socket()
 void session::start()
 {
   std::cout << "========= Starting session =========" << std::endl;
-  
+
   boost::asio::async_read_until(socket_, buffer, "\r\n\r\n",
       boost::bind(&session::handle_request, this,
       boost::asio::placeholders::error,
@@ -35,13 +35,13 @@ int session::handle_request(const boost::system::error_code& error,
 
   HttpRequest request(message_request);
 
-  std::string url = request.getUrl();  
+  std::string url = request.getUrl();
   std::string function = get_function_from_url(url);
   std::unique_ptr<handler> handler_ptr;
-  
+
   std::cout << "Function: " << function << std::endl;
   if (!error) {
-    
+
     if (function == "echo_dir") {
       handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
     } else if (function == "static_dir") {
@@ -52,11 +52,11 @@ int session::handle_request(const boost::system::error_code& error,
       std::string status = "500 Internal Server Error";
       return -1;
     }
-    
+
     http_response response = handler_ptr->handle_request();
     // write out response
     write_string(response.to_string());
-  } 
+  }
   else{
     std::cerr << error.message() << std::endl;
     return -1;
@@ -67,16 +67,16 @@ int session::handle_request(const boost::system::error_code& error,
 
 // given a string, writes out to socket and ends connection
 void session::write_string(std::string send) {
-    
+
   std::cout << "========= Writing out =========" << std::endl;
 
   // output buffer
   boost::asio::streambuf out_streambuf;
   std::ostream out(&out_streambuf);
-  out << send;  
+  out << send;
 
   boost::asio::write(socket_, out_streambuf);
-  
+
   // wait for transmission Note: this could hang forever
   tcdrain(socket_.native_handle());
 
@@ -84,7 +84,7 @@ void session::write_string(std::string send) {
   boost::system::error_code ec;
   socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
   socket_.close();
-  
+
   std::cout << "========= Ending Session =========" << std::endl;
 }
 
@@ -96,7 +96,7 @@ std::vector<char> session::convert_buffer()
     buffers_begin(buffer.data()),
     buffers_end(buffer.data())
   };
-  
+
   std::copy(s.begin(), s.end(), std::back_inserter(converted_vector));
   return converted_vector;
 }
