@@ -61,7 +61,7 @@ test:
 	./server_test
 	./session_test
 	./utils_test
-	python2 test/integration_test.py
+	# python2 test/integration_test.py
 
 clean:
 	# Note: be careful of make clean removing *_test

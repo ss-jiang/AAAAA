@@ -60,6 +60,7 @@ int session::handle_request(const boost::system::error_code& error,
   //   std::cerr << error.message() << std::endl;
   //   return -1;
   // }
+  write_string("TODO");
   return 0;
 
 }
