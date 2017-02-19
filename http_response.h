@@ -4,23 +4,27 @@
 #include <string>
 #include <vector>
 
-class http_response {
+class Response {
 
 public:
-    http_response();
-    // returns string representation of response for sending
-    std::string to_string();
-    void set_status(std::string &status);
-    void add_header(std::string &header);
-    void set_body(std::vector<char> &body);
+    enum ResponseCode {
+        // Define your HTTP response codes here.
+    };
+
+    void SetStatus(const ResponseCode response_code);
+    void AddHeader(const std::string& header_name, const std::string& header_value);
+    void SetBody(const std::string& body);
+
+    // returns string representation of response
+    std::string ToString();
 
 private:
     // HTTP headers from HTTP specification
     const std::string HTTP_VER = "HTTP/1.1";
-    std::string status_code;
+    ResponseCode status_code;
     // Note: we may need to differentiate between general/entity/... headers later
-    std::vector<std::string> headers;
-    std::vector<char> message_body;
+    std::vector<std::pair<std::string, std::string>> headers;
+    std::string message_body;
 };
 
 #endif

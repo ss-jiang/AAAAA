@@ -31,36 +31,35 @@ void session::start()
 int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
-  std::vector<char>message_request = convert_buffer();
+  // TODO convert to string
+  std::string message_request = convert_buffer();
 
-  HttpRequest request(message_request);
+  auto request = Request::Parse(message_request);
 
-  std::string url = request.getUrl();
-  std::string function = get_function_from_url(url);
-  std::unique_ptr<handler> handler_ptr;
+  // std::unique_ptr<handler> handler_ptr;
 
-  std::cout << "Function: " << function << std::endl;
-  if (!error) {
+  // std::cout << "Function: " << function << std::endl;
+  // if (!error) {
 
-    if (function == "echo_dir") {
-      handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
-    } else if (function == "static_dir") {
-      handler_ptr = std::unique_ptr<handler>(new static_handler(url));
-    }
-    else {
-      // TODO: Handle this error
-      std::string status = "500 Internal Server Error";
-      return -1;
-    }
+  //   if (function == "echo_dir") {
+  //     handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
+  //   } else if (function == "static_dir") {
+  //     handler_ptr = std::unique_ptr<handler>(new static_handler(url));
+  //   }
+  //   else {
+  //     // TODO: Handle this error
+  //     std::string status = "500 Internal Server Error";
+  //     return -1;
+  //   }
 
-    http_response response = handler_ptr->handle_request();
-    // write out response
-    write_string(response.to_string());
-  }
-  else{
-    std::cerr << error.message() << std::endl;
-    return -1;
-  }
+  //   http_response response = handler_ptr->handle_request();
+  //   // write out response
+  //   write_string(response.to_string());
+  // }
+  // else{
+  //   std::cerr << error.message() << std::endl;
+  //   return -1;
+  // }
   return 0;
 
 }
@@ -88,17 +87,14 @@ void session::write_string(std::string send) {
   std::cout << "========= Ending Session =========" << std::endl;
 }
 
-std::vector<char> session::convert_buffer()
+std::string session::convert_buffer()
 {
-  std::vector<char>converted_vector;
-
   std::string s{
     buffers_begin(buffer.data()),
     buffers_end(buffer.data())
   };
 
-  std::copy(s.begin(), s.end(), std::back_inserter(converted_vector));
-  return converted_vector;
+  return s;
 }
 
 

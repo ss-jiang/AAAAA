@@ -1,120 +1,34 @@
 #include "http_request.h"
 #include <vector>
 #include <iostream>
-using namespace std;
 
-HttpRequest::HttpRequest(vector <char> request)
-{
-	message_request = request;
-	m_err = 200;
-	decodeFirstLine();
+// TODO
+std::unique_ptr<Request> Request::Parse(const std::string& raw_request) {
+	return nullptr;
 }
-
-HttpRequest::HttpRequest()
-{
-	m_err = 200;
+// TODO
+std::string Request::raw_request() const {
+	return nullptr;
 }
-
-
-int HttpRequest::decodeFirstLine()
-{
-	int spaces = 0;
-
-	string method;
-	string url;
-	string version;
-
-	setErr(false);
-
-	for (unsigned int i=0; i < message_request.size(); i++)
-	{
-		if (message_request[i] == '\r')
-			break;
-
-		if (message_request[i] == ' ') {
-		  if (i == 0)
-		    setErr(400);
-		  if (message_request[i-1] == ' ')
-		    setErr(400);
-		     spaces++;
-		     continue;
-		}
-
-		switch(spaces)
-		{
-		case 0:
-			method += message_request[i];
-			break;
-		case 1:
-			url += message_request[i];
-			break;
-		case 2:
-			version += message_request[i];
-			break;
-		}
-	}
-
-	cout << "Method: " << method << endl;
-	if (method != "GET" && method != "POST") {
-            // TODO: Log what the error was that caused this
-			cerr << "Invalid method in request line!" << endl;
-			setErr(501);
-	}
-
-	if (version != "HTTP/1.0" && version != "HTTP/1.1") {
-        // TODO: Log what the version was that caused this
-		cerr << "Unsupported version in request line!" << endl;
-		setErr(505);
-	}
-	if (url.size() < 1)
-	  setErr(400);
-
-	setMethod(method);
-	setUrl(url);
-	setVersion(version);
-
-	if (m_err != 200)
-		return -1;
-
-	return 0;
+// TODO
+std::string Request::method() const {
+	return nullptr;
 }
-
-string HttpRequest::getMethod()
-{
-  return m_method;
+// TODO
+std::string Request::uri() const {
+	return nullptr;
 }
-
-void HttpRequest::setMethod(string method)
-{
-  m_method = method;
+// TODO
+std::string Request::version() const {
+	return nullptr;
 }
-
-string HttpRequest::getUrl()
-{
-  return m_url;
+// TODO
+using Headers = std::vector<std::pair<std::string, std::string>>;
+Headers Request::headers() const {
+	Headers headers;
+	return headers;
 }
-
-void HttpRequest::setUrl(string url)
-{
-  m_url = url;
-}
-
-void HttpRequest::setErr(int e)
-{
-  m_err = e;
-}
-
-int HttpRequest::getErr()
-{
-  return m_err;
-}
-
-void HttpRequest::setVersion(string v)
-{
-	m_version = v;
-}
-
-string HttpRequest::getVersion()
-{
-	return m_version;
+// TODO
+std::string Request::body() const {
+	return nullptr;
 }

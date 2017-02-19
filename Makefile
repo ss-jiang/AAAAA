@@ -1,5 +1,5 @@
 LDFLAGS=-pthread -lboost_system
-CXXFLAGS=-Wall -Werror -std=c++0x -fprofile-arcs -ftest-coverage
+CXXFLAGS=-Wall -Werror -std=c++11 -fprofile-arcs -ftest-coverage
 
 # directory locations
 CP_LOC=config_parser/

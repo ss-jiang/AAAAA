@@ -1,38 +1,36 @@
 #include "http_response.h"
 
-http_response::http_response() {
-    status_code = "200 OK";
-}
-
-std::string http_response::to_string() {
+std::string Response::ToString() {
     std::string res_str = "";
 
     // status header
     res_str += HTTP_VER;
-    res_str += " " + status_code + "\r\n";
+    // TODO
+    //res_str += " " + status_code + "\r\n";
 
-    // headers
-    for(auto it = headers.begin(); it != headers.end(); ++it) {
-        res_str += *it + "\r\n";
-    }
-    
+    // TODO: headers
+    // for(auto it = headers.begin(); it != headers.end(); ++it) {
+    //     res_str += *it + "\r\n";
+    // }
+
     // padding
     res_str += "\r\n";
 
     // body
     res_str += std::string(message_body.begin(), message_body.end());
-    
-    return res_str; 
+
+    return res_str;
 }
 
-void http_response::set_status(std::string &status) {
-    status_code = status;
+void Response::SetStatus(const ResponseCode response_code) {
+    status_code = response_code;
 }
 
-void http_response::add_header(std::string &header) {
+void Response::AddHeader(const std::string& header_name, const std::string& header_value) {
+    std::pair<std::string, std::string> header(header_name, header_value);
     headers.push_back(header);
 }
 
-void http_response::set_body(std::vector<char> &body) {
+void Response::SetBody(const std::string& body) {
     message_body = body;
 }

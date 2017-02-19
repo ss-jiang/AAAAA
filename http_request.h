@@ -3,28 +3,26 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
-class HttpRequest
+class Request
 {
- private:
-  std::string m_url;
-  std::string m_method;
-  int m_err;
-  std::vector<char> message_request;
-  std::string m_version;
+  public:
+    static std::unique_ptr<Request> Parse(const std::string& raw_request);
 
- public:
-  HttpRequest(std::vector<char>request);
-  HttpRequest();
-  int decodeFirstLine();
-  std::string getMethod();
-  void setMethod(std::string method);
-  std::string getUrl();
-  void setUrl(std::string url);
-  void setErr(int e);
-  int getErr();
-  void setVersion(std::string v);
-  std::string getVersion();
+    std::string raw_request() const;
+    std::string method() const;
+    std::string uri() const;
+    std::string version() const;
+
+    using Headers = std::vector<std::pair<std::string, std::string>>;
+    Headers headers() const;
+
+    std::string body() const;
+
+  private:
+    // TODO
+
 };
 
 
