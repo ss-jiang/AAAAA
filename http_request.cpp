@@ -6,29 +6,23 @@
 std::unique_ptr<Request> Request::Parse(const std::string& raw_request) {
 	return nullptr;
 }
-// TODO
+
 std::string Request::raw_request() const {
-	return nullptr;
+	return raw_request;
 }
-// TODO
 std::string Request::method() const {
-	return nullptr;
+	return method;
 }
-// TODO
 std::string Request::uri() const {
-	return nullptr;
+	return uri;
 }
-// TODO
 std::string Request::version() const {
-	return nullptr;
+	return version;
 }
-// TODO
 using Headers = std::vector<std::pair<std::string, std::string>>;
 Headers Request::headers() const {
-	Headers headers;
 	return headers;
 }
-// TODO
 std::string Request::body() const {
-	return nullptr;
+	return body;
 }

@@ -25,8 +25,12 @@ class Request
     std::string body() const;
 
   private:
-    // TODO
-
+    std::string raw_request;
+    std::string method;
+    std::string uri;
+    std::string version;
+    std::string body;
+    Headers headers;
 };
 
 
