@@ -22,7 +22,7 @@ std::string Response::ToString() {
 
     // headers
     for(auto it = headers.begin(); it != headers.end(); ++it) {
-        res_str += (*it).first + " " + (*it).second + "\r\n";
+        res_str += (*it).first + ": " + (*it).second + "\r\n";
     }
 
     // padding
