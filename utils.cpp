@@ -1,5 +1,7 @@
 #include "utils.h"
+
 namespace utils {
+
 
 ServerInfo setup_info_struct(NginxConfig config) {
 
@@ -16,9 +18,30 @@ ServerInfo setup_info_struct(NginxConfig config) {
         if (curr_statement == "port" && config.statements_[i]->tokens_.size() == 2) {
             info.port = std::atoi(config.statements_[i]->tokens_[1].c_str());
         }
-        else if (curr_statement == "path")
-        {
-            std::cout << config.statements_[i]->tokens_.size() << std::endl;
+        else if (curr_statement == "path" && config.statements_[i]->tokens_.size() == 3) {
+
+            std::string uri_prefix = config.statements_[i]->tokens_[1];
+            std::string handler_name = config.statements_[i]->tokens_[2];
+
+            std::unique_ptr<RequestHandler> handler;
+
+            if (handler_name == "EchoHandler") {
+                handler = std::unique_ptr<RequestHandler>(new EchoHandler);
+            } else { //if (handler_name == "StaticHandler") {
+                handler = std::unique_ptr<RequestHandler>(new StaticHandler);
+            }
+            // else {
+            //     // TODO return 404 handler
+            // }
+
+            // TODO: unsure about lifetime being ok for this child_block
+            handler->Init(uri_prefix, *(config.statements_[i]->child_block_));
+            info.handler_map[uri_prefix] = std::move(handler);
+
+        } else if (curr_statement == "default" && config.statements_[i]->tokens_.size() == 2) {
+            std::string handler_name = config.statements_[i]->tokens_[1];
+
+            // TODO: handle setting default handler
         }
     }
 

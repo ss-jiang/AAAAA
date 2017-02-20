@@ -34,6 +34,8 @@ class RequestHandler {
 
 class EchoHandler : public RequestHandler {
 public:
+    EchoHandler() {}
+
     Status Init(const std::string& uri_prefix,
                 const NginxConfig& config);
 
@@ -45,6 +47,8 @@ private:
 
 class StaticHandler : public RequestHandler {
 public:
+    StaticHandler() {}
+
     Status Init(const std::string& uri_prefix,
                 const NginxConfig& config);
 

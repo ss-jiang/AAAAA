@@ -20,6 +20,16 @@ RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Respon
     return RequestHandler::PASS;
 }
 
+// TODO
+RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+// TODO
+RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
+    return RequestHandler::PASS;
+}
+
 std::string StaticHandler::get_path_from_url(std::string url) {
   // Assumption: url must be prefixed with "/static/" at this point
   //             get_function_from_url has already been called on url

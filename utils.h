@@ -18,6 +18,7 @@ namespace utils {
 
     // returns a struct containing all config info nicely parsed
     ServerInfo setup_info_struct(NginxConfig config);
+
 }
 
 #endif
