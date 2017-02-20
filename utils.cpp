@@ -20,7 +20,7 @@ namespace utils {
                 && config.statements_[i]->tokens_.size() == 2)
             {
                 // TODO
-                info.functions[config.statements_[i]->tokens_[1]] = nullptr;
+                info.functions[config.statements_[i]->tokens_[1]] = curr_statement;
             }
         }
 

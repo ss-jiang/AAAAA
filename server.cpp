@@ -3,7 +3,7 @@
 // Note: boost documentation referrenced to create server class
 
 server::server(boost::asio::io_service& io_service, short port,
-    std::map <std::string, std::unique_ptr<RequestHandler>> function_mapping)
+    std::map <std::string, std::string> function_mapping)
   : io_service_(io_service),
     acceptor_(io_service, tcp::endpoint(tcp::v4(), port))
 {
@@ -18,7 +18,7 @@ server::server(boost::asio::io_service& io_service, short port,
 
 void server::handle_accept(session* new_session,
     const boost::system::error_code& error,
-    std::map <std::string, std::unique_ptr<RequestHandler>> function_mapping)
+    std::map <std::string, std::string> function_mapping)
 {
   if (!error)
   {
