@@ -1,5 +1,6 @@
 #include "handler.h"
 #include "http_response.h"
+#include "http_request.h"
 
 #include <iostream>
 #include <fstream>
@@ -12,9 +13,9 @@ RequestHandler::Status EchoHandler::Init(const std::string& uri_prefix, const Ng
 
 RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Response* response) {
     response->SetStatus(Response::OK);
-    response->AddHeader("Content-Length", std::to_string(request.body().size() - 4));
+    response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
     response->AddHeader("Content-Type", "text/plain");
-    response->SetBody(request.body());
+    response->SetBody(request.raw_request());
 
     return RequestHandler::PASS;
 }

@@ -53,7 +53,7 @@ test:
 	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
 	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o http_response.o handler.o -o handler_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o http_response.o http_request.o handler.o -o handler_test ${LDFLAGS} ${CXXFLAGS}
 
 	# Run Tests
 	./handler_test
