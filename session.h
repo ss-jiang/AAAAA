@@ -5,7 +5,9 @@
 #include <boost/asio.hpp>
 #include <vector>
 #include <map>
+#include <memory>
 
+#include "handler.h"
 #include "http_response.h"
 
 // for tcp type

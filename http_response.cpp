@@ -5,19 +5,31 @@ std::string Response::ToString() {
 
     // status header
     res_str += HTTP_VER;
-    // TODO
-    //res_str += " " + status_code + "\r\n";
+    std::string str_code;
 
-    // TODO: headers
-    // for(auto it = headers.begin(); it != headers.end(); ++it) {
-    //     res_str += *it + "\r\n";
-    // }
+    switch (status_code) {
+        case OK:
+            str_code = "200 OK";
+            break;
+        case NOT_FOUND:
+            str_code = "404 Not found";
+            break;
+        default:
+            str_code = "500 Internal server error";
+            break;
+    }
+    res_str += " " + str_code + "\r\n";
+
+    // headers
+    for(auto it = headers.begin(); it != headers.end(); ++it) {
+        res_str += (*it).first + ": " + (*it).second + "\r\n";
+    }
 
     // padding
     res_str += "\r\n";
 
     // body
-    res_str += std::string(message_body.begin(), message_body.end());
+    res_str += message_body;
 
     return res_str;
 }

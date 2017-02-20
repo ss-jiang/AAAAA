@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
 
     NginxConfigParser parser;
     NginxConfig config;
-    
+
     // read config file
     if (!parser.Parse(argv[1], &config)){
       std::cerr << "Error: malformed config file." << std::endl;
@@ -36,9 +36,11 @@ int main(int argc, char* argv[])
     }
 
     boost::asio::io_service io_service;
-    
+
+    std::map<std::string, std::string> todo_delete;
+
     // create and start server
-    server s(io_service, info.port, info.functions);
+    server s(io_service, info.port, todo_delete);
     io_service.run();
   }
   catch (std::exception& e)

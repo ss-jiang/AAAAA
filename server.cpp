@@ -17,7 +17,7 @@ server::server(boost::asio::io_service& io_service, short port,
 }
 
 void server::handle_accept(session* new_session,
-    const boost::system::error_code& error, 
+    const boost::system::error_code& error,
     std::map <std::string, std::string> function_mapping)
 {
   if (!error)

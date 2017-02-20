@@ -31,9 +31,7 @@ void session::start()
 int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
-  // TODO convert to string
   std::string message_request = convert_buffer();
-
   auto request = Request::Parse(message_request);
 
   // std::unique_ptr<handler> handler_ptr;
@@ -103,26 +101,28 @@ std::string session::convert_buffer()
 std::string session::get_function_from_url(std::string url)
 {
   std::string function = "";
-  // TODO: log these errors
-  if (url.length() == 0)
-    return "Error: Blank Function Field";
-  if (url.length() == 1 && url == "/")
-    return "/";
+  // TODO FIX THIS
+  // // TODO: log these errors
+  // if (url.length() == 0)
+  //   return "Error: Blank Function Field";
+  // if (url.length() == 1 && url == "/")
+  //   return "/";
 
-  int second_slash_pos = url.find("/", 1);
-  // string between first and second slashs
-  std::string dir = url.substr(0, second_slash_pos);
+  // int second_slash_pos = url.find("/", 1);
+  // // string between first and second slashs
+  // std::string dir = url.substr(0, second_slash_pos);
 
-  std::map<std::string, std::string>::iterator it = function_mapping.find(dir);
-  // if valid function found
-  if (it != function_mapping.end()){
-     function = it->second;
-  }
-  else{
-    // TODO: log these errors
-    std::cerr << "Error in determining function" << std::endl;
-    std::cerr << "URL causing error :" << url << std::endl;
-  }
+  // std::map<std::string, std::string>::iterator it = function_mapping.find(dir);
+  // // if valid function found
+  // if (it != function_mapping.end()){
+  //    function = it->second;
+  // }
+  // else{
+  //   // TODO: log these errors
+  //   std::cerr << "Error in determining function" << std::endl;
+  //   std::cerr << "URL causing error :" << url << std::endl;
+  // }
+
   return function;
 }
 

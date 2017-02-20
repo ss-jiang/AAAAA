@@ -54,7 +54,7 @@ TEST_F(NginxStringConfigTest, BalancedConfig) {
 
 
 // Tests config with missing matched bracket
-// Test case used to fail since ParseString incorrectly 
+// Test case used to fail since ParseString incorrectly
 // returned True on the config with imbalanced {}
 TEST_F(NginxStringConfigTest, ImbalancedConfig) {
     EXPECT_FALSE(ParseString("server { listen 80;"));
@@ -65,4 +65,10 @@ TEST_F(NginxStringConfigTest, ImbalancedConfig) {
 // returned false on nested string
 TEST_F(NginxStringConfigTest, NestedConfig) {
     EXPECT_TRUE(ParseString("first { second { center; } }"));
-} 
+}
+
+// Tests empty block
+// used to fail due to returning false
+TEST_F(NginxStringConfigTest, EmptyBlockConfig) {
+    EXPECT_TRUE(ParseString("path /echo EchoHandler {}"));
+}

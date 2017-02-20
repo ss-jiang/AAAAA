@@ -13,6 +13,8 @@ SERVER_TEST=test/server_test.cpp
 PARSER_TEST=test/config_parser_test.cc
 HANDLER_TEST=test/handler_test.cpp
 
+OBJECT_FILES=http_request.o http_response.o utils.o config_parser.o handler.o
+
 all: server.o session.o main.o config_parser.o utils.o http_request.o http_response.o handler.o
 	g++ -o web-server main.o server.o session.o config_parser.o utils.o http_request.o http_response.o handler.o $(LDFLAGS) $(CXXFLAGS)
 
@@ -49,11 +51,11 @@ test:
 	g++ -std=c++0x -isystem ${GTEST_DIR}/include -I${GTEST_DIR} -pthread -c ${GTEST_DIR}/src/gtest-all.cc
 	ar -rv libgtest.a gtest-all.o
 	# Build tests
-	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o http_request.o http_response.o handler.o -o session_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o utils_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o -o server_test ${LDFLAGS} ${CXXFLAGS}
-	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a utils.o config_parser.o http_response.o handler.o -o handler_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${SESSION_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o session_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${UTILS_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o utils_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${PARSER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o config_parser_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${SERVER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o server_test ${LDFLAGS} ${CXXFLAGS}
+	g++ -isystem ${GTEST_DIR}/include ${HANDLER_TEST} ${GTEST_DIR}/src/gtest_main.cc libgtest.a $(OBJECT_FILES) -o handler_test ${LDFLAGS} ${CXXFLAGS}
 
 	# Run Tests
 	./handler_test

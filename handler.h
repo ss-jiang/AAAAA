@@ -13,7 +13,7 @@ class RequestHandler {
  public:
   // TODO: add to this as needed (right now glorified bool)
   enum Status {
-    OK,
+    PASS,
     FAIL
   };
 
@@ -34,20 +34,26 @@ class RequestHandler {
 
 class EchoHandler : public RequestHandler {
 public:
+    EchoHandler() {}
+
     Status Init(const std::string& uri_prefix,
-                      const NginxConfig& config);
+                const NginxConfig& config);
+
     Status HandleRequest(const Request& request,
-                               Response* response);
+                         Response* response);
 private:
     std::string to_send;
 };
 
 class StaticHandler : public RequestHandler {
 public:
+    StaticHandler() {}
+
     Status Init(const std::string& uri_prefix,
-                      const NginxConfig& config);
+                const NginxConfig& config);
+
     Status HandleRequest(const Request& request,
-                               Response* response);
+                         Response* response);
 
 private:
     std::string url;

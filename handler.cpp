@@ -1,10 +1,34 @@
 #include "handler.h"
+#include "http_response.h"
+#include "http_request.h"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
 
+RequestHandler::Status EchoHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Response* response) {
+    response->SetStatus(Response::OK);
+    response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
+    response->AddHeader("Content-Type", "text/plain");
+    response->SetBody(request.raw_request());
+
+    return RequestHandler::PASS;
+}
+
+// TODO
+RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+// TODO
+RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
+    return RequestHandler::PASS;
+}
 
 std::string StaticHandler::get_path_from_url(std::string url) {
   // Assumption: url must be prefixed with "/static/" at this point
