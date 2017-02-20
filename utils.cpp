@@ -23,12 +23,12 @@ ServerInfo setup_info_struct(NginxConfig config) {
             std::string uri_prefix = config.statements_[i]->tokens_[1];
             std::string handler_name = config.statements_[i]->tokens_[2];
 
-            std::unique_ptr<RequestHandler> handler;
+            std::shared_ptr<RequestHandler> handler;
 
             if (handler_name == "EchoHandler") {
-                handler = std::unique_ptr<RequestHandler>(new EchoHandler);
+                handler = std::shared_ptr<RequestHandler>(new EchoHandler);
             } else { //if (handler_name == "StaticHandler") {
-                handler = std::unique_ptr<RequestHandler>(new StaticHandler);
+                handler = std::shared_ptr<RequestHandler>(new StaticHandler);
             }
             // else {
             //     // TODO return 404 handler

@@ -15,9 +15,9 @@ class server {
 
 public:
   server(boost::asio::io_service& io_service, short port,
-  		std::map<std::string, std::string> function_mapping);
+  		std::map<std::string, std::shared_ptr<RequestHandler>> function_mapping);
   void handle_accept(session* new_session, const boost::system::error_code& error,
-  		std::map <std::string, std::string> function_mapping);
+  		std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping);
 
 private:
   boost::asio::io_service& io_service_;

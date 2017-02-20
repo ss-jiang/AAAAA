@@ -10,7 +10,7 @@
 #include <memory>
 
 session::session(boost::asio::io_service& io_service,
-  std::map <std::string, std::string> function_mapping)
+  std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping)
   : socket_(io_service), function_mapping(function_mapping) {}
 
 tcp::socket& session::socket()

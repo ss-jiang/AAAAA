@@ -11,7 +11,7 @@ struct ServerInfo {
 
     // map that maps url prefix to handler
     // Ex. "/echo" -> EchoHandler
-    std::map <std::string, std::unique_ptr<RequestHandler>> handler_map;
+    std::map <std::string, std::shared_ptr<RequestHandler>> handler_map;
 };
 
 namespace utils {
