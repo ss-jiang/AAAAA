@@ -16,7 +16,8 @@ using boost::asio::ip::tcp;
 class session
 {
 public:
-  session(boost::asio::io_service& io_service, std::map <std::string, std::string> function_mapping);
+  session(boost::asio::io_service& io_service, 
+    std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping);
   tcp::socket& socket();
   void start();
   // handles requests by seeing which type of response is required
@@ -29,7 +30,7 @@ private:
   std::string get_function_from_url(std::string url);
 
   tcp::socket socket_;
-  std::map <std::string, std::string> function_mapping;
+  std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping;
   boost::asio::streambuf buffer;
 };
 
