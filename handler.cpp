@@ -132,3 +132,55 @@ std::vector<char> StaticHandler::read_file(std::string filename)
 
     return result;
 }
+
+
+RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const NginxConfig& config)
+{
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status StatusHandler::addHandledRequest(std::string url, int c)
+{
+    map_of_request_and_responses[url].push_back(c);
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status StatusHandler::addNameToHandlerMap(std::map<std::string, std::string> m)
+{
+    map_of_uri_to_handler = m;
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response)
+{
+    std::cout << "Handling Status Request" << std::endl;
+
+    std::string to_send;
+
+    to_send += "These are the handlers available and their URIs:\n";
+    for (auto const& x : map_of_uri_to_handler){
+        to_send += x.first;
+        to_send += " -> ";
+        to_send += x.second;
+        to_send += "\n";
+    }  
+
+    to_send += "\nThese are the requests received and their corresponding response codes\n";
+    for (auto const& x : map_of_request_and_responses){
+        for(auto const& c: x.second){
+            to_send += x.first;
+            to_send += " -> ";
+            to_send += std::to_string(c);
+            to_send += "\n";
+        }
+
+    }    
+    response->SetStatus(Response::OK);
+    response->AddHeader("Content-Length", std::to_string(to_send.length()));
+    response->AddHeader("Content-Type", "text/plain");
+    response->SetBody(to_send);
+
+    return RequestHandler::PASS;
+}
+
+
