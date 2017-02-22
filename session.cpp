@@ -39,11 +39,10 @@ int session::handle_request(const boost::system::error_code& error,
     return -1;
   }
 
-  // TODO: pls put out this fire
-  // // find longest prefix that uniquely matches uri (our key for handler_map)
-  // std::string longest_prefix = get_longest_prefix(request->uri());
-  // // get corresponding handler
-  // std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix];
+  // find longest prefix that uniquely matches uri (our key for handler_map)
+  std::string longest_prefix = get_longest_prefix(request->uri());
+  // get corresponding handler
+  std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix];
 
   // Response response;
 
@@ -54,6 +53,7 @@ int session::handle_request(const boost::system::error_code& error,
   // }
 
   // handler_ptr->HandleRequest(*request, &response);
+
   // write_string(response.ToString());
   return 0;
 }
@@ -105,32 +105,15 @@ std::string session::resetUri(const std::string original_uri, const std::string 
 //for example: "/foo/bar" gets matched with "/foo/bar" before it gets matched with "/foo"
 std::string session::get_longest_prefix(const std::string original_url)
 {
-  std::string url;
-  if (original_url[original_url.length() - 1] != '/')
-    url = original_url + "/"; //so that we can handle the part after the last slash
-  else
-    url = original_url;
-  std::string function = "";
-  int startPos = url.find("/", 0);
-  int upto = url.length();
-  int lastPos;
-  std::string subUrl;
-  while (true){
-    lastPos = url.rfind("/", upto);
-    if (lastPos == 0){
-      if (handler_map.count("/") == 0){
-        break;
+  unsigned int longest_match_size = 0;
+  std::string longest_match = "";
+  for (auto const& iter : handler_map){
+    if (original_url.find(iter.first) == 0){
+      if (iter.first.length() > longest_match_size){
+        longest_match = iter.first;
+        longest_match_size = iter.first.length();
       }
-      //since we check lastPos == 0 for no match found, we need to take care of the corner case when either there's nothing after the port number or there's only one slash. In case "/" is specified in config.
-      else
-        return "/";
     }
-    subUrl = url.substr(startPos, lastPos);
-    if (handler_map.count(subUrl) != 0){
-      return subUrl;
-    }
-    upto = lastPos - 1;
   }
-  std::cout << "No Match found" << std::endl;
-  return "";
+  return longest_match;
 }
