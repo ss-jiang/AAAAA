@@ -58,8 +58,8 @@ public:
                          Response* response);
 
 private:
-    std::string url;
-    std::string dir_from_config;
+    // path from web-server directory specified in config block
+    std::string serve_path;
     // gets path from url string
     std::string get_path_from_url(std::string url);
     // returns path to exec on current system
@@ -69,13 +69,13 @@ private:
     // returns content type header based on file extension
     std::string get_content_type(std::string filename);
     // reads raw file into vector of characters
-    std::vector<char> read_file(std::string filename);
+    std::string read_file(std::string filename);
 };
 
 class NotFoundHandler : public RequestHandler {
 public:
     NotFoundHandler() {}
-    
+
     Status Init(const std::string& uri_prefix, const NginxConfig& config);
 
     Status HandleRequest(const Request& request,
