@@ -1,15 +1,13 @@
 # This is a comment
 port 2020;
 
-path / StaticHandler {
-  root /public;
-}
-
 path /static StaticHandler {
   root ./public;
 }
 
 path /echo EchoHandler {}
+
+path /status StatusHandler {}
 
 # Default response handler if no handlers match.
 default NotFoundHandler {}

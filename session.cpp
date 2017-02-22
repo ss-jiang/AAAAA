@@ -20,8 +20,6 @@ tcp::socket& session::socket()
 
 void session::start()
 {
-  std::cout << "========= Starting session =========" << std::endl;
-
   boost::asio::async_read_until(socket_, buffer, "\r\n\r\n",
       boost::bind(&session::handle_request, this,
       boost::asio::placeholders::error,
@@ -41,28 +39,26 @@ int session::handle_request(const boost::system::error_code& error,
 
   // find longest prefix that uniquely matches uri (our key for handler_map)
   std::string longest_prefix = get_longest_prefix(request->uri());
+
   // get corresponding handler
   std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix];
 
-  // Response response;
+  Response response;
+  RequestHandler::Status status = handler_ptr->HandleRequest(*request, &response);
 
-  // // TODO: this needs to be set the handler specified in the config by "default" (store in info struct?)
-  // // if no matching handler_ptr, then set to NotFoundHandler
-  // if (handler_ptr == NULL){
-  //   handler_ptr = std::shared_ptr<RequestHandler>(new NotFoundHandler());
-  // }
+  // if handler failed, use NotFoundHandler
+  if (status == RequestHandler::FAIL) {
+    std::cerr << "Session: error when handling uri: " << request->uri() << std::endl;
+    std::unique_ptr<RequestHandler> error_handler (new NotFoundHandler);
+    error_handler->HandleRequest(*request, &response);
+  }
 
-  // handler_ptr->HandleRequest(*request, &response);
-
-  // write_string(response.ToString());
+  write_string(response.ToString());
   return 0;
 }
 
 // given a string, writes out to socket and ends connection
 void session::write_string(std::string send) {
-
-  std::cout << "========= Writing out =========" << std::endl;
-
   // output buffer
   boost::asio::streambuf out_streambuf;
   std::ostream out(&out_streambuf);
@@ -77,8 +73,6 @@ void session::write_string(std::string send) {
   boost::system::error_code ec;
   socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
   socket_.close();
-
-  std::cout << "========= Ending Session =========" << std::endl;
 }
 
 std::string session::get_message_request()
@@ -91,24 +85,18 @@ std::string session::get_message_request()
   return s;
 }
 
-//removes the part of url that specifies the handler, leaving just the file path
-std::string session::resetUri(const std::string original_uri, const std::string longest_prefix){
-  //set uri to uri - longest_prefix
-  std::string new_uri = original_uri.substr(longest_prefix.length());
-  //remove the leading / for corner case of "/" being mapped to StaticHandler
-  if (new_uri[0] == '/')
-    new_uri = new_uri.substr(1);
-  return new_uri;
-}
-
 //get the longest prefix that matches with what's specified in config. If no match is found, an empty string is returned
 //for example: "/foo/bar" gets matched with "/foo/bar" before it gets matched with "/foo"
 std::string session::get_longest_prefix(const std::string original_url)
 {
   unsigned int longest_match_size = 0;
   std::string longest_match = "";
+
+  // for each possible matching url
   for (auto const& iter : handler_map){
+    // if prefix match
     if (original_url.find(iter.first) == 0){
+      // save away longest match
       if (iter.first.length() > longest_match_size){
         longest_match = iter.first;
         longest_match_size = iter.first.length();
