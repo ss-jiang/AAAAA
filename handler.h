@@ -82,4 +82,23 @@ public:
                          Response* response);
 };
 
+class StatusHandler : public RequestHandler {
+public:
+    StatusHandler() {}
+
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+
+    Status addRequestHandled(std::string url, int c);
+
+    Status addNameToHandlerMap(std::map<std::string, std::string> m);
+
+private:
+    std::map<std::string, std::vector<int>> map_of_request_and_responses;
+    std::map<std::string, std::string> map_of_uri_to_handler;
+
+};
+
 #endif
