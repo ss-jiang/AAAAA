@@ -38,3 +38,11 @@ path <url-mapping> <handler-name> {
 # Handler to be called if no url matches
 default <handler-name> {}
 ```
+
+## Current Handlers
+All handlers extend the RequestHandler abstract base class/interface. They implement two virtual functions, Init and HandleRequest.
+
+* EchoHandler - returns the raw request back as a response
+* StaticHandler - serves files from configured path (root <absolute path from base dir>; in child block)
+* StatusHandler - displays information on the status of webserver (# of requests, types of handlers that exist and for which url prefixes)
+* 404Handler - always displays a 404 error when handling a request

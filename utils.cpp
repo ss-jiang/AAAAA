@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "handler.h"
 
 namespace utils {
 
@@ -21,23 +22,14 @@ ServerInfo setup_info_struct(NginxConfig config) {
         else if (curr_statement == "path" && config.statements_[i]->tokens_.size() == 3) {
 
             std::string uri_prefix = config.statements_[i]->tokens_[1];
-       
+
             std::string handler_name = config.statements_[i]->tokens_[2];
 
-            std::shared_ptr<RequestHandler> handler;
+            auto raw_handler_ptr = RequestHandler::CreateByName(handler_name.c_str());
+            std::shared_ptr<RequestHandler> handler_ptr (raw_handler_ptr);
 
-            if (handler_name == "EchoHandler") {
-                handler = std::shared_ptr<RequestHandler>(new EchoHandler);
-            } else if (handler_name == "StaticHandler") {
-                handler = std::shared_ptr<RequestHandler>(new StaticHandler);
-            }
-            else {
-                handler = std::shared_ptr<RequestHandler>(new NotFoundHandler);
-            }
-
-            // TODO: unsure about lifetime being ok for this child_block
-            handler->Init(uri_prefix, *(config.statements_[i]->child_block_));
-            info.handler_map[uri_prefix] = std::move(handler);
+            handler_ptr->Init(uri_prefix, *(config.statements_[i]->child_block_));
+            info.handler_map[uri_prefix] = std::move(handler_ptr);
 
         } else if (curr_statement == "default" && config.statements_[i]->tokens_.size() == 2) {
             std::string handler_name = config.statements_[i]->tokens_[1];

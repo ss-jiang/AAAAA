@@ -36,9 +36,8 @@ int main(int argc, char* argv[])
     }
 
     boost::asio::io_service io_service;
-
     std::map<std::string, std::shared_ptr<RequestHandler>>handler_map = info.handler_map;
-    //std::map<std::string, std::string> todo_delete;
+
     // create and start server
     server s(io_service, info.port, handler_map);
     io_service.run();

@@ -18,8 +18,6 @@ class Request
     std::string method() const;
     std::string uri() const;
     std::string version() const;
-    int error() const;
-    void setUri(const std::string& new_uri);
 
     using Headers = std::vector<std::pair<std::string, std::string>>;
     Headers headers() const;
@@ -27,7 +25,6 @@ class Request
     std::string body() const;
 
   private:
-    int m_error;
     std::string m_raw_request;
     std::string m_method;
     std::string m_uri;
