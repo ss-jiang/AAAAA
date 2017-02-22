@@ -5,7 +5,15 @@ path / StaticHandler {
   root /public;
 }
 
+path /static StaticHandler {
+  root /public;
+}
+
 path /echo EchoHandler {}
+
+path /e/c/h/o EchoHandler {}
+
+path /e/c EchoHandler {}
 
 # Default response handler if no handlers match.
 default NotFoundHandler {}

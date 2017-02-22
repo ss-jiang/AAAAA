@@ -30,6 +30,8 @@ class RequestHandler {
   // HTTP code 500.
   virtual Status HandleRequest(const Request& request,
                                Response* response) = 0;
+
+  Status NotFoundHandler(const Request& request, Response* response);
 };
 
 class EchoHandler : public RequestHandler {
@@ -57,7 +59,7 @@ public:
 
 private:
     std::string url;
-
+    std::string dir_from_config;
     // gets path from url string
     std::string get_path_from_url(std::string url);
     // returns path to exec on current system
@@ -68,6 +70,16 @@ private:
     std::string get_content_type(std::string filename);
     // reads raw file into vector of characters
     std::vector<char> read_file(std::string filename);
+};
+
+class NotFoundHandler : public RequestHandler {
+public:
+    NotFoundHandler() {}
+    
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
 };
 
 #endif

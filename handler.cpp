@@ -7,11 +7,24 @@
 #include <vector>
 #include <string>
 
+RequestHandler::Status NotFoundHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status NotFoundHandler::HandleRequest(const Request& request, Response* response){
+    response->SetStatus(Response::NOT_FOUND);
+    response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
+    response->AddHeader("Content-Type", "text/plain");
+    response->SetBody("404 NOT FOUND");
+    return RequestHandler::PASS; //should this be FAIL actually?
+}
+
 RequestHandler::Status EchoHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
     return RequestHandler::PASS;
 }
 
 RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "In EchoHandler" << std::endl;
     response->SetStatus(Response::OK);
     response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
     response->AddHeader("Content-Type", "text/plain");
@@ -20,56 +33,40 @@ RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Respon
     return RequestHandler::PASS;
 }
 
-// TODO
+// Sets dir_from_config to directory specified after root in config
 RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    for (unsigned int i = 0; i < config.statements_.size(); i++){
+      if (config.statements_[i]->tokens_[0] == "root"){
+        dir_from_config = config.statements_[i]->tokens_[1];
+      }
+    }
     return RequestHandler::PASS;
 }
 
-// TODO
+
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "========= Handling Static =========" << std::endl;
+    url = request.uri();
+    std::string abs_path = get_exec_path() + dir_from_config + "/" + url;
+    std::cout << "Serving file from: " << abs_path << std::endl;
+    if (!file_exists(abs_path)) {
+      // TODO: 404 Error
+      std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
+      return RequestHandler::FAIL;
+    }
+    // save content_type header based on requested file extension
+    std::string content_type = get_content_type(abs_path);
+    // raw byte array
+    std::vector<char> to_send = read_file(abs_path);
+    response->SetStatus(Response::OK);
+    response->AddHeader("Content-Length", std::to_string(to_send.size()));
+    response->AddHeader("Content-Type", content_type);
+    std::string to_send_string(to_send.begin(), to_send.end());
+    response->SetBody(to_send_string);
     return RequestHandler::PASS;
 }
 
-std::string StaticHandler::get_path_from_url(std::string url) {
-  // Assumption: url must be prefixed with "/static/" at this point
-  //             get_function_from_url has already been called on url
-  int second_slash_pos = url.find("/", 1);
-  // from second slash to end of string is path
-  std::string path = url.substr(second_slash_pos, std::string::npos);
 
-  return path;
-}
-
-// http_response StaticHandler::handle_request() {
-//     http_response response;
-//     std::cout << "========= Handling Static =========" << std::endl;
-
-//     std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
-//     std::cout << "Serving file from: " << abs_path << std::endl;
-
-//     if (!file_exists(abs_path)) {
-//       // TODO: 404 Error
-//       std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
-//       return response;
-//     }
-
-//     // save content_type header based on requested file extension
-//     std::string content_type = get_content_type(abs_path);
-
-//     // raw byte array
-//     std::vector<char> to_send = read_file(abs_path);
-
-//     std::string status = "200 OK";
-//     response.set_status(status);
-
-//     std::string length_header = "Content-Length: " + std::to_string(to_send.size());
-//     response.add_header(length_header);
-//     std::string type_header = "Content-Type: " + content_type;
-//     response.add_header(type_header);
-
-//     response.set_body(to_send);
-//     return response;
-// }
 
 // gets current path of executable
 std::string StaticHandler::get_exec_path() {

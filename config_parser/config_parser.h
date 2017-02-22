@@ -20,7 +20,7 @@ class NginxConfigStatement {
 // The parsed representation of the entire config.
 class NginxConfig {
  public:
-  std::string ToString(int depth = 0);
+  std::string ToString(int depth = 0) const;
   std::vector<std::shared_ptr<NginxConfigStatement>> statements_;
 };
 

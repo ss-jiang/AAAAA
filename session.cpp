@@ -33,32 +33,17 @@ int session::handle_request(const boost::system::error_code& error,
 
   std::string message_request = convert_buffer();
   auto request = Request::Parse(message_request);
-
-  // std::unique_ptr<handler> handler_ptr;
-
-  // std::cout << "Function: " << function << std::endl;
-  // if (!error) {
-
-  //   if (function == "echo_dir") {
-  //     handler_ptr = std::unique_ptr<handler>(new echo_handler(message_request));
-  //   } else if (function == "static_dir") {
-  //     handler_ptr = std::unique_ptr<handler>(new static_handler(url));
-  //   }
-  //   else {
-  //     // TODO: Handle this error
-  //     std::string status = "500 Internal Server Error";
-  //     return -1;
-  //   }
-
-  //   http_response response = handler_ptr->handle_request();
-  //   // write out response
-  //   write_string(response.to_string());
-  // }
-  // else{
-  //   std::cerr << error.message() << std::endl;
-  //   return -1;
-  // }
-  write_string("TODO");
+  std::string url = request->uri();
+  std::string longest_prefix = get_function_from_url(url);
+  std::shared_ptr<RequestHandler> handler_ptr = function_mapping[longest_prefix];
+  std::string new_uri = resetUri(request->uri(), longest_prefix);
+  request->setUri(new_uri);
+  Response response;
+  if (handler_ptr == NULL){
+    handler_ptr = std::shared_ptr<RequestHandler>(new NotFoundHandler());
+  }
+  handler_ptr->HandleRequest(*request, &response);
+  write_string(response.ToString());
   return 0;
 
 }
@@ -96,33 +81,46 @@ std::string session::convert_buffer()
   return s;
 }
 
-
-
-std::string session::get_function_from_url(std::string url)
-{
-  std::string function = "";
-  // TODO FIX THIS
-  // // TODO: log these errors
-  // if (url.length() == 0)
-  //   return "Error: Blank Function Field";
-  // if (url.length() == 1 && url == "/")
-  //   return "/";
-
-  // int second_slash_pos = url.find("/", 1);
-  // // string between first and second slashs
-  // std::string dir = url.substr(0, second_slash_pos);
-
-  // std::map<std::string, std::string>::iterator it = function_mapping.find(dir);
-  // // if valid function found
-  // if (it != function_mapping.end()){
-  //    function = it->second;
-  // }
-  // else{
-  //   // TODO: log these errors
-  //   std::cerr << "Error in determining function" << std::endl;
-  //   std::cerr << "URL causing error :" << url << std::endl;
-  // }
-
-  return function;
+//removes the part of url that specifies the handler, leaving just the file path
+std::string session::resetUri(const std::string original_uri, const std::string longest_prefix){
+  //set uri to uri - longest_prefix
+  std::string new_uri = original_uri.substr(longest_prefix.length());
+  //remove the leading / for corner case of "/" being mapped to StaticHandler
+  if (new_uri[0] == '/')
+    new_uri = new_uri.substr(1);
+  return new_uri;
 }
 
+//get the longest prefix that matches with what's specified in config. If no match is found, an empty string is returned
+//for example: "/foo/bar" gets matched with "/foo/bar" before it gets matched with "/foo"
+std::string session::get_function_from_url(const std::string original_url)
+{
+  std::string url;
+  if (original_url[original_url.length() - 1] != '/')
+    url = original_url + "/"; //so that we can handle the part after the last slash
+  else
+    url = original_url;
+  std::string function = "";
+  int startPos = url.find("/", 0);
+  int upto = url.length();
+  int lastPos;
+  std::string subUrl;
+  while (true){
+    lastPos = url.rfind("/", upto);
+    if (lastPos == 0){
+      if (function_mapping.count("/") == 0){
+        break;
+      }
+      //since we check lastPos == 0 for no match found, we need to take care of the corner case when either there's nothing after the port number or there's only one slash. In case "/" is specified in config.
+      else
+        return "/";
+    }
+    subUrl = url.substr(startPos, lastPos);
+    if (function_mapping.count(subUrl) != 0){
+      return subUrl;
+    }
+    upto = lastPos - 1;
+  }
+  std::cout << "No Match found" << std::endl;
+  return "";
+}
