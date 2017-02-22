@@ -59,7 +59,7 @@ public:
 
 private:
     std::string url;
-
+    std::string dir_from_config;
     // gets path from url string
     std::string get_path_from_url(std::string url);
     // returns path to exec on current system

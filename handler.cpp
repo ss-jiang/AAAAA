@@ -33,27 +33,29 @@ RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Respon
     return RequestHandler::PASS;
 }
 
-// TODO
+// Sets dir_from_config to directory specified after root in config
 RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    for (unsigned int i = 0; i < config.statements_.size(); i++){
+      if (config.statements_[i]->tokens_[0] == "root"){
+        dir_from_config = config.statements_[i]->tokens_[1];
+      }
+    }
     return RequestHandler::PASS;
 }
 
-// TODO: url is empty now, might need to change Init? or somehow modify config to have url in it. Also for files that cannot be found, NotFoundHandler has to be invoked. How do we do that?
+
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
     std::cout << "========= Handling Static =========" << std::endl;
     url = request.uri();
-    std::string abs_path = get_exec_path() + "/public" + get_path_from_url(url);
+    std::string abs_path = get_exec_path() + dir_from_config + "/" + url;
     std::cout << "Serving file from: " << abs_path << std::endl;
-
     if (!file_exists(abs_path)) {
       // TODO: 404 Error
       std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
       return RequestHandler::FAIL;
     }
-
     // save content_type header based on requested file extension
     std::string content_type = get_content_type(abs_path);
-
     // raw byte array
     std::vector<char> to_send = read_file(abs_path);
     response->SetStatus(Response::OK);
@@ -64,14 +66,7 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
     return RequestHandler::PASS;
 }
 
-std::string StaticHandler::get_path_from_url(std::string url) {
-  // Assumption: url must be prefixed with "/static/" at this point
-  //             get_function_from_url has already been called on url
-  int second_slash_pos = url.find("/", 1);
-  // from second slash to end of string is path
-  std::string path = url.substr(second_slash_pos, std::string::npos);
-  return path;
-}
+
 
 // gets current path of executable
 std::string StaticHandler::get_exec_path() {

@@ -36,12 +36,13 @@ int session::handle_request(const boost::system::error_code& error,
   std::string url = request->uri();
   std::string longest_prefix = get_function_from_url(url);
   std::shared_ptr<RequestHandler> handler_ptr = function_mapping[longest_prefix];
+  std::string new_uri = resetUri(request->uri(), longest_prefix);
+  request->setUri(new_uri);
   Response response;
   if (handler_ptr == NULL){
     handler_ptr = std::shared_ptr<RequestHandler>(new NotFoundHandler());
   }
   handler_ptr->HandleRequest(*request, &response);
-  
   write_string(response.ToString());
   return 0;
 
@@ -80,6 +81,15 @@ std::string session::convert_buffer()
   return s;
 }
 
+//removes the part of url that specifies the handler, leaving just the file path
+std::string session::resetUri(const std::string original_uri, const std::string longest_prefix){
+  //set uri to uri - longest_prefix
+  std::string new_uri = original_uri.substr(longest_prefix.length());
+  //remove the leading / for corner case of "/" being mapped to StaticHandler
+  if (new_uri[0] == '/')
+    new_uri = new_uri.substr(1);
+  return new_uri;
+}
 
 //get the longest prefix that matches with what's specified in config. If no match is found, an empty string is returned
 //for example: "/foo/bar" gets matched with "/foo/bar" before it gets matched with "/foo"
@@ -95,14 +105,15 @@ std::string session::get_function_from_url(const std::string original_url)
   int upto = url.length();
   int lastPos;
   std::string subUrl;
-  //since we check lastPos == 0 for no match found, we need to take care of the corner case when either there's nothing after the port number or there's only one slash. In case "/" is specified in config.
-  if (upto == 1 && function_mapping.count("/") != 0){
-    return "/";
-  }
   while (true){
     lastPos = url.rfind("/", upto);
     if (lastPos == 0){
-      break;
+      if (function_mapping.count("/") == 0){
+        break;
+      }
+      //since we check lastPos == 0 for no match found, we need to take care of the corner case when either there's nothing after the port number or there's only one slash. In case "/" is specified in config.
+      else
+        return "/";
     }
     subUrl = url.substr(startPos, lastPos);
     if (function_mapping.count(subUrl) != 0){

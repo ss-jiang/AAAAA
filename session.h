@@ -28,7 +28,7 @@ public:
 private:
   std::string convert_buffer();
   std::string get_function_from_url(const std::string original_url);
-
+  std::string resetUri(const std::string original_uri, const std::string longest_prefix);
   tcp::socket socket_;
   std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping;
   boost::asio::streambuf buffer;

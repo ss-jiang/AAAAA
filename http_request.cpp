@@ -68,6 +68,12 @@ std::string Request::method() const {
 std::string Request::uri() const {
 	return m_uri;
 }
+
+//this method allows the uri to be set to the path for static file serving
+void Request::setUri(const std::string& new_uri){
+	m_uri = new_uri;
+}
+
 std::string Request::version() const {
 	return m_version;
 }
