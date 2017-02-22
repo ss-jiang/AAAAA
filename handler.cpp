@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 
+
 // Dynamic handler creation code
 std::map<std::string, RequestHandler* (*)(void)>* request_handler_builders = nullptr;
 
@@ -87,8 +88,9 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
 // If not possible, we return fail signal for outside class to handle
 // calling not found handler
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
-    
+
     std::string abs_path = serve_path;
+
     //get the file name/path from the request url
     std::string file_path = request.uri().substr(uri_prefix.length());
 
@@ -96,14 +98,12 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
 
     std::cout << "Attempting to serve file from: " << serve_path << std::endl;
 
-    // TODO WE SHOULD LOOK AT THIS. MIGHT CAUSE AN ERROR BECAUSE
-    //FOLDERS ARE FILES AND EXIST, SO IF WE PASS IT A DIRECTORY IT MIGHT
-    //RETURN TRUE EVEN THOUGH WE WANT IT TO RETURN FALSE
-    if (!file_exists(abs_path)) {
+    if(!is_regular_file(abs_path.c_str())) {
       std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
       return RequestHandler::FAIL;
     }
 
+    std::cout << "Exists and is regular file" << std::endl;
     // save content_type header based on requested file extension
     std::string content_type = get_content_type(abs_path);
 
@@ -117,11 +117,14 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
     return RequestHandler::PASS;
 }
 
-// checks if file exists
-bool StaticHandler::file_exists(std::string filename) {
-    struct stat buffer;
-    return (stat(filename.c_str(), &buffer) == 0);
+// checks if file exists and is regular file
+bool StaticHandler::is_regular_file(const char *path)
+{
+    struct stat path_stat;
+    stat(path, &path_stat);
+    return S_ISREG(path_stat.st_mode);
 }
+
 
 // gets content-type based on the file extension of requested file
 std::string StaticHandler::get_content_type(std::string filename) {
@@ -204,7 +207,7 @@ RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Resp
         to_send += " -> ";
         to_send += x.second;
         to_send += "\n";
-    }  
+    }
 
     to_send += "\nThese are the requests received and their corresponding response codes\n";
     for (auto const& x : map_of_request_and_responses){
@@ -215,7 +218,7 @@ RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Resp
             to_send += "\n";
         }
 
-    }    
+    }
     response->SetStatus(Response::OK);
     response->AddHeader("Content-Length", std::to_string(to_send.length()));
     response->AddHeader("Content-Type", "text/plain");

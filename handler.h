@@ -11,7 +11,8 @@
 // is long lived and created at server constrution.
 class RequestHandler {
  public:
-  // TODO: add to this as needed (right now glorified bool)
+
+  // Add to this as needed
   enum Status {
     PASS,
     FAIL
@@ -89,7 +90,7 @@ private:
     // gets path from url string
     std::string get_path_from_url(std::string url);
     // true if file exists
-    bool file_exists(std::string filename);
+    bool is_regular_file(const char *path);
     // returns content type header based on file extension
     std::string get_content_type(std::string filename);
     // reads raw file into vector of characters

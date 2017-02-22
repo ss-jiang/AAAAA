@@ -1,10 +1,6 @@
 # This is a comment
 port 2020;
 
-path / StaticHandler {
-  root /public;
-}
-
 path /static StaticHandler {
   root ./public;
 }
