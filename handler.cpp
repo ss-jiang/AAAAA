@@ -68,12 +68,12 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
     this->uri_prefix = uri_prefix;
 
     //Code to add the / between the file path and serve_path properly
-    if (serve_path.length() != 0 && serve_path[serve_parth.length()-1] != '/'){
+    if (serve_path.length() != 0 && serve_path[serve_path.length()-1] != '/'){
         if (uri_prefix.length() != 0 && uri_prefix[uri_prefix.length()-1] == '/'){
             serve_path += '/';
         }
     }else{
-        if (uri_prefix.length() != 0 && uri_prefix[abs_path.length()-1] != '/'){
+        if (uri_prefix.length() != 0 && uri_prefix[uri_prefix.length()-1] != '/'){
             if (serve_path.length() != 0){
                 serve_path = serve_path.substr(0, serve_path.length() - 1);
             }
