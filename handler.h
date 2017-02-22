@@ -82,6 +82,8 @@ public:
                          Response* response);
 
 private:
+    //uri_prefix specified by the config file exposed to users
+    std::string uri_prefix;
     // path from web-server directory specified in config block
     std::string serve_path;
     // gets path from url string
