@@ -65,6 +65,21 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
         }
     }
 
+    this->uri_prefix = uri_prefix;
+
+    //Code to add the / between the file path and serve_path properly
+    if (serve_path.length() != 0 && serve_path[serve_path.length()-1] != '/'){
+        if (uri_prefix.length() != 0 && uri_prefix[uri_prefix.length()-1] == '/'){
+            serve_path += '/';
+        }
+    }else{
+        if (uri_prefix.length() != 0 && uri_prefix[uri_prefix.length()-1] != '/'){
+            if (serve_path.length() != 0){
+                serve_path = serve_path.substr(0, serve_path.length() - 1);
+            }
+        }
+    }
+
     return RequestHandler::PASS;
 }
 
@@ -72,9 +87,18 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
 // If not possible, we return fail signal for outside class to handle
 // calling not found handler
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
-    std::string abs_path = serve_path + "/" + request.uri();
-    std::cout << "Attempting to serve file from: " << abs_path << std::endl;
+    
+    std::string abs_path = serve_path;
+    //get the file name/path from the request url
+    std::string file_path = request.uri().substr(uri_prefix.length());
 
+    abs_path += file_path;
+
+    std::cout << "Attempting to serve file from: " << serve_path << std::endl;
+
+    // TODO WE SHOULD LOOK AT THIS. MIGHT CAUSE AN ERROR BECAUSE
+    //FOLDERS ARE FILES AND EXIST, SO IF WE PASS IT A DIRECTORY IT MIGHT
+    //RETURN TRUE EVEN THOUGH WE WANT IT TO RETURN FALSE
     if (!file_exists(abs_path)) {
       std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
       return RequestHandler::FAIL;
@@ -144,6 +168,11 @@ std::string StaticHandler::read_file(std::string filename)
 
     return str_rep;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////// Status Handler /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
 
 
 RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const NginxConfig& config)

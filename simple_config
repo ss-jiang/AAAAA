@@ -6,7 +6,7 @@ path / StaticHandler {
 }
 
 path /static StaticHandler {
-  root /public;
+  root ./public;
 }
 
 path /echo EchoHandler {}
