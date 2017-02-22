@@ -7,6 +7,16 @@
 #include <vector>
 #include <string>
 
+// Dynamic handler creation code
+std::map<std::string, RequestHandler* (*)(void)>* request_handler_builders = nullptr;
+
+RequestHandler* RequestHandler::CreateByName(const char* type) {
+  const auto type_and_builder = request_handler_builders->find(type);
+  if (type_and_builder == request_handler_builders->end()) {
+    return nullptr;
+  }
+  return (*type_and_builder->second)();
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////  Not Found Handler  /////////////////////////////////////
@@ -62,7 +72,7 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
 // If not possible, we return fail signal for outside class to handle
 // calling not found handler
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
-    std::string abs_path = get_exec_path() + serve_path + "/" + request.uri();
+    std::string abs_path = "./" + serve_path + "/" + request.uri();
     std::cout << "Attempting to serve file from: " << abs_path << std::endl;
 
     if (!file_exists(abs_path)) {
@@ -81,20 +91,6 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
     response->AddHeader("Content-Type", content_type);
     response->SetBody(to_send);
     return RequestHandler::PASS;
-}
-
-// gets current path of executable
-std::string StaticHandler::get_exec_path() {
-    // max path is 2048 characters in file directory
-    const int MAX_PATH = 2048;
-    char buffer[MAX_PATH];
-    if (getcwd(buffer, sizeof(buffer)) != NULL) {
-        return std::string(buffer);
-    }
-    else {
-        std::cerr << "Error: unable to find current working directory" << std::endl;
-    }
-    return "";
 }
 
 // checks if file exists
