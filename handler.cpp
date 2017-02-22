@@ -66,8 +66,6 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
     return RequestHandler::PASS;
 }
 
-
-
 // gets current path of executable
 std::string StaticHandler::get_exec_path() {
     // max path is 2048 characters in file directory
@@ -117,7 +115,6 @@ std::string StaticHandler::get_content_type(std::string filename) {
     }
     return content_type;
 }
-
 
 // reads raw file into vector of characters
 std::vector<char> StaticHandler::read_file(std::string filename)

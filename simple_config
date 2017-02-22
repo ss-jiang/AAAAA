@@ -11,9 +11,5 @@ path /static StaticHandler {
 
 path /echo EchoHandler {}
 
-path /e/c/h/o EchoHandler {}
-
-path /e/c EchoHandler {}
-
 # Default response handler if no handlers match.
 default NotFoundHandler {}
