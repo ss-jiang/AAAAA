@@ -72,7 +72,7 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
 // If not possible, we return fail signal for outside class to handle
 // calling not found handler
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
-    std::string abs_path = "./" + serve_path + "/" + request.uri();
+    std::string abs_path = serve_path + "/" + request.uri();
     std::cout << "Attempting to serve file from: " << abs_path << std::endl;
 
     if (!file_exists(abs_path)) {
