@@ -10,8 +10,8 @@
 #include <memory>
 
 session::session(boost::asio::io_service& io_service,
-  std::map <std::string, std::shared_ptr<RequestHandler>> function_mapping)
-  : socket_(io_service), function_mapping(function_mapping) {}
+  std::map <std::string, std::shared_ptr<RequestHandler>> handler_map)
+  : socket_(io_service), handler_map(handler_map) {}
 
 tcp::socket& session::socket()
 {
@@ -31,21 +31,31 @@ void session::start()
 int session::handle_request(const boost::system::error_code& error,
     size_t bytes_transferred){
 
-  std::string message_request = convert_buffer();
-  auto request = Request::Parse(message_request);
-  std::string url = request->uri();
-  std::string longest_prefix = get_function_from_url(url);
-  std::shared_ptr<RequestHandler> handler_ptr = function_mapping[longest_prefix];
-  std::string new_uri = resetUri(request->uri(), longest_prefix);
-  request->setUri(new_uri);
-  Response response;
-  if (handler_ptr == NULL){
-    handler_ptr = std::shared_ptr<RequestHandler>(new NotFoundHandler());
-  }
-  handler_ptr->HandleRequest(*request, &response);
-  write_string(response.ToString());
-  return 0;
+  auto request = Request::Parse(get_message_request());
 
+  // Parse signifies error to outside function by wiping raw_request
+  if (request->raw_request() == "") {
+    std::cerr << "Error parsing the following message request:" << get_message_request() << std::endl;
+    return -1;
+  }
+
+  // TODO: pls put out this fire
+  // // find longest prefix that uniquely matches uri (our key for handler_map)
+  // std::string longest_prefix = get_longest_prefix(request->uri());
+  // // get corresponding handler
+  // std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix];
+
+  // Response response;
+
+  // // TODO: this needs to be set the handler specified in the config by "default" (store in info struct?)
+  // // if no matching handler_ptr, then set to NotFoundHandler
+  // if (handler_ptr == NULL){
+  //   handler_ptr = std::shared_ptr<RequestHandler>(new NotFoundHandler());
+  // }
+
+  // handler_ptr->HandleRequest(*request, &response);
+  // write_string(response.ToString());
+  return 0;
 }
 
 // given a string, writes out to socket and ends connection
@@ -71,7 +81,7 @@ void session::write_string(std::string send) {
   std::cout << "========= Ending Session =========" << std::endl;
 }
 
-std::string session::convert_buffer()
+std::string session::get_message_request()
 {
   std::string s{
     buffers_begin(buffer.data()),
@@ -93,7 +103,7 @@ std::string session::resetUri(const std::string original_uri, const std::string 
 
 //get the longest prefix that matches with what's specified in config. If no match is found, an empty string is returned
 //for example: "/foo/bar" gets matched with "/foo/bar" before it gets matched with "/foo"
-std::string session::get_function_from_url(const std::string original_url)
+std::string session::get_longest_prefix(const std::string original_url)
 {
   std::string url;
   if (original_url[original_url.length() - 1] != '/')
@@ -108,7 +118,7 @@ std::string session::get_function_from_url(const std::string original_url)
   while (true){
     lastPos = url.rfind("/", upto);
     if (lastPos == 0){
-      if (function_mapping.count("/") == 0){
+      if (handler_map.count("/") == 0){
         break;
       }
       //since we check lastPos == 0 for no match found, we need to take care of the corner case when either there's nothing after the port number or there's only one slash. In case "/" is specified in config.
@@ -116,7 +126,7 @@ std::string session::get_function_from_url(const std::string original_url)
         return "/";
     }
     subUrl = url.substr(startPos, lastPos);
-    if (function_mapping.count(subUrl) != 0){
+    if (handler_map.count(subUrl) != 0){
       return subUrl;
     }
     upto = lastPos - 1;

@@ -3,6 +3,7 @@
 #include <iostream>
 
 // TODO: add header parsing
+// Note: to signify error, we wipe the raw_request with empty string to signify to session
 std::unique_ptr<Request> Request::Parse(const std::string& raw_request) {
 	std::unique_ptr<Request> req(new Request);
 	req->m_raw_request = raw_request;
@@ -20,9 +21,9 @@ std::unique_ptr<Request> Request::Parse(const std::string& raw_request) {
 
 		if (raw_request[i] == ' ') {
 		  if (i == 0)
-		    req->m_error = 400;
+		    req->m_raw_request = "";
 		  if (raw_request[i-1] == ' ')
-		    req->m_error = 400;
+		    req->m_raw_request = "";
 		     spaces++;
 		     continue;
 		}
@@ -43,25 +44,20 @@ std::unique_ptr<Request> Request::Parse(const std::string& raw_request) {
 
 	if (method != "GET" && method != "POST") {
 			std::cerr << "Invalid method in request line!" << std::endl;
-			req->m_error = 501;
+			req->m_raw_request = "";
 	}
 
 	if (version != "HTTP/1.0" && version != "HTTP/1.1") {
 		std::cerr << "Unsupported version in request line!" << std::endl;
-		req->m_error = 505;
+		req->m_raw_request = "";
 	}
 	if (url.size() < 1)
-	  req->m_error = 400;
+	  req->m_raw_request = "";
 
 	req->m_method = method;
 	req->m_uri = url;
 	req->m_version = version;
 	return req;
-}
-
-//this method allows the uri to be set to the path for static file serving
-void Request::setUri(const std::string& new_uri){
-	m_uri = new_uri;
 }
 
 std::string Request::raw_request() const {
@@ -75,9 +71,6 @@ std::string Request::uri() const {
 }
 std::string Request::version() const {
 	return m_version;
-}
-int Request::error() const {
-	return m_error;
 }
 using Headers = std::vector<std::pair<std::string, std::string>>;
 Headers Request::headers() const {

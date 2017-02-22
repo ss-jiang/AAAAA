@@ -17,7 +17,7 @@ RequestHandler::Status NotFoundHandler::Init(const std::string& uri_prefix, cons
 }
 
 RequestHandler::Status NotFoundHandler::HandleRequest(const Request& request, Response* response){
-    std::string body = "404 NOT FOUND"
+    std::string body = "404 NOT FOUND";
 
     response->SetStatus(Response::NOT_FOUND);
     response->AddHeader("Content-Length", std::to_string(body.size()));
