@@ -48,6 +48,7 @@ int session::handle_request(const boost::system::error_code& error,
 
   // if handler failed, use NotFoundHandler
   if (status == RequestHandler::FAIL) {
+    std::cerr << "Session: error when handling uri: " << request->uri() << std::endl;
     std::unique_ptr<RequestHandler> error_handler (new NotFoundHandler);
     error_handler->HandleRequest(*request, &response);
   }

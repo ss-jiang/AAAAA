@@ -28,8 +28,9 @@ RequestHandler::Status NotFoundHandler::Init(const std::string& uri_prefix, cons
 }
 
 RequestHandler::Status NotFoundHandler::HandleRequest(const Request& request, Response* response){
-    std::string body = "404 NOT FOUND";
+    std::cout << "\nNotFoundHandler::HandleRequest" << std::endl;
 
+    std::string body = "404 NOT FOUND";
     response->SetStatus(Response::NOT_FOUND);
     response->AddHeader("Content-Length", std::to_string(body.size()));
     response->AddHeader("Content-Type", "text/plain");
@@ -46,6 +47,8 @@ RequestHandler::Status EchoHandler::Init(const std::string& uri_prefix, const Ng
 }
 
 RequestHandler::Status EchoHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "\nEchoHandler::HandleRequest" << std::endl;
+
     response->SetStatus(Response::OK);
     response->AddHeader("Content-Length", std::to_string(request.raw_request().size() - 4));
     response->AddHeader("Content-Type", "text/plain");
@@ -88,27 +91,25 @@ RequestHandler::Status StaticHandler::Init(const std::string& uri_prefix, const 
 // If not possible, we return fail signal for outside class to handle
 // calling not found handler
 RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "\nStaticHandler::HandleRequest" << std::endl;
 
     std::string abs_path = serve_path;
 
     //get the file name/path from the request url
     std::string file_path = request.uri().substr(uri_prefix.length());
-
     abs_path += file_path;
-
-    std::cout << "Attempting to serve file from: " << serve_path << std::endl;
 
     if(!is_regular_file(abs_path.c_str())) {
       std::cerr << "Error: " << abs_path << " does not exist" << std::endl;
       return RequestHandler::FAIL;
     }
 
-    std::cout << "Exists and is regular file" << std::endl;
     // save content_type header based on requested file extension
     std::string content_type = get_content_type(abs_path);
 
     // raw byte array
     std::string to_send = read_file(abs_path);
+    std::cout << "Serving file from: " << abs_path << std::endl;
 
     response->SetStatus(Response::OK);
     response->AddHeader("Content-Length", std::to_string(to_send.size()));
@@ -118,8 +119,7 @@ RequestHandler::Status StaticHandler::HandleRequest(const Request& request, Resp
 }
 
 // checks if file exists and is regular file
-bool StaticHandler::is_regular_file(const char *path)
-{
+bool StaticHandler::is_regular_file(const char *path) {
     struct stat path_stat;
     stat(path, &path_stat);
     return S_ISREG(path_stat.st_mode);
@@ -157,8 +157,7 @@ std::string StaticHandler::get_content_type(std::string filename) {
 }
 
 // reads raw file into vector of characters
-std::string StaticHandler::read_file(std::string filename)
-{
+std::string StaticHandler::read_file(std::string filename) {
     std::ifstream ifs(filename, std::ios::binary|std::ios::ate);
     std::ifstream::pos_type pos = ifs.tellg();
 
@@ -178,26 +177,22 @@ std::string StaticHandler::read_file(std::string filename)
 //////////////////////////////////////////////////////////////////////////////////////
 
 
-RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const NginxConfig& config)
-{
+RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status StatusHandler::addHandledRequest(std::string url, int c)
-{
+RequestHandler::Status StatusHandler::addHandledRequest(std::string url, int c) {
     map_of_request_and_responses[url].push_back(c);
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status StatusHandler::addNameToHandlerMap(std::map<std::string, std::string> m)
-{
+RequestHandler::Status StatusHandler::addNameToHandlerMap(std::map<std::string, std::string> m) {
     map_of_uri_to_handler = m;
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response)
-{
-    std::cout << "Handling Status Request" << std::endl;
+RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response) {
+    std::cout << "\nStatusHandler::HandleRequest" << std::endl;
 
     std::string to_send;
 
