@@ -91,7 +91,7 @@ public:
     Status HandleRequest(const Request& request,
                          Response* response);
 
-    Status addRequestHandled(std::string url, int c);
+    Status addHandledRequest(std::string url, int c);
 
     Status addNameToHandlerMap(std::map<std::string, std::string> m);
 

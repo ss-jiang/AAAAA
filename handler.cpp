@@ -139,23 +139,23 @@ RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const 
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status StatusHandler::addRequestHandled(std::string url, int c)
+RequestHandler::Status StatusHandler::addHandledRequest(std::string url, int c)
 {
     map_of_request_and_responses[url].push_back(c);
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status addNameToHandlerMap(std::map<std::string, std::string> m)
+RequestHandler::Status StatusHandler::addNameToHandlerMap(std::map<std::string, std::string> m)
 {
     map_of_uri_to_handler = m;
     return RequestHandler::PASS;
 }
 
-RequestHanlder::Status HandleRequest(const Request& request, Response* response)
+RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response)
 {
     std::cout << "Handling Status Request" << std::endl;
 
-    string to_send;
+    std::string to_send;
 
     to_send += "These are the handlers available and their URIs:\n";
     for (auto const& x : map_of_uri_to_handler){
@@ -179,6 +179,8 @@ RequestHanlder::Status HandleRequest(const Request& request, Response* response)
     response->AddHeader("Content-Length", std::to_string(to_send.length()));
     response->AddHeader("Content-Type", "text/plain");
     response->SetBody(to_send);
+
+    return RequestHandler::PASS;
 }
 
 
