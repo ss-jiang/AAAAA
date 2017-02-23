@@ -7,10 +7,11 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <iostream>
+#include <fstream>
 #include <memory>
 
 session::session(boost::asio::io_service& io_service,
-  std::map <std::string, std::shared_ptr<RequestHandler>> handler_map)
+  std::map <std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>> handler_map)
   : socket_(io_service), handler_map(handler_map) {}
 
 tcp::socket& session::socket()
@@ -41,7 +42,7 @@ int session::handle_request(const boost::system::error_code& error,
   std::string longest_prefix = get_longest_prefix(request->uri());
 
   // get corresponding handler
-  std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix];
+  std::shared_ptr<RequestHandler> handler_ptr = handler_map[longest_prefix].second;
 
   Response response;
   RequestHandler::Status status = handler_ptr->HandleRequest(*request, &response);
@@ -51,7 +52,10 @@ int session::handle_request(const boost::system::error_code& error,
     std::cerr << "Session: error when handling uri: " << request->uri() << std::endl;
     std::unique_ptr<RequestHandler> error_handler (new NotFoundHandler);
     error_handler->HandleRequest(*request, &response);
-  }
+  } 
+
+  log_request_response(request->uri(), response.ToString());
+
 
   write_string(response.ToString());
   return 0;
@@ -83,6 +87,17 @@ std::string session::get_message_request()
   };
 
   return s;
+}
+
+void session::log_request_response(std::string request_url, std::string response)
+{
+  int first_space = response.find(" ");
+  std::string response_code = response.substr(first_space + 1, response.find(" ", first_space + 1) - first_space);
+  std::ofstream ofile;
+  ofile.open("request_response_log.txt", std::ofstream::out | std::ofstream::app);
+  std::string to_write = request_url + " " + response_code + "\n";
+  ofile.write(to_write.c_str(), to_write.length());
+  ofile.close();
 }
 
 //get the longest prefix that matches with what's specified in config. If no match is found, an empty string is returned

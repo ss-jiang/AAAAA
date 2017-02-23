@@ -181,17 +181,46 @@ RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const 
     return RequestHandler::PASS;
 }
 
-RequestHandler::Status StatusHandler::addHandledRequest(std::string url, int c) {
-    map_of_request_and_responses[url].push_back(c);
-    return RequestHandler::PASS;
+bool StatusHandler::addHandledRequests() {
+    std::ifstream infile("request_response_log.txt");
+
+    if (!infile.is_open())
+        return false;
+
+    std::string request_url;
+    int response_code;
+    while (infile >> request_url >> response_code)
+    {
+        map_of_request_and_responses[request_url].push_back(response_code);
+    }
+
+    infile.close();
+
+    return true; 
 }
 
-RequestHandler::Status StatusHandler::addNameToHandlerMap(std::map<std::string, std::string> m) {
-    map_of_uri_to_handler = m;
-    return RequestHandler::PASS;
+bool StatusHandler::addHandlerMapping() {
+    std::ifstream infile("handler_names.txt");
+
+    if (!infile.is_open()) 
+        return false;
+
+    std::string name, url;
+    while (infile >> name >> url)
+    {
+        map_of_uri_to_handler[name] = url;
+    }
+
+    infile.close();
+
+    return true;
 }
 
 RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response) {
+    if (!addHandledRequests() || !addHandlerMapping()){
+        return RequestHandler::FAIL;
+    }
+
     std::cout << "\nStatusHandler::HandleRequest" << std::endl;
 
     std::string to_send;
@@ -218,6 +247,9 @@ RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Resp
     response->AddHeader("Content-Length", std::to_string(to_send.length()));
     response->AddHeader("Content-Type", "text/plain");
     response->SetBody(to_send);
+
+    map_of_uri_to_handler.clear();
+    map_of_request_and_responses.clear();
 
     return RequestHandler::PASS;
 }
