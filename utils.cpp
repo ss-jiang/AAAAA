@@ -11,6 +11,7 @@ ServerInfo setup_info_struct(NginxConfig config) {
     info.port = -1;
 
     int num_statements = config.statements_.size();
+    //map of uri handlers to names 
     std::map<std::string, std::string> handlers_for_status;
     std::string status_uri;
     // parse away our config file into info struct
@@ -60,6 +61,8 @@ ServerInfo setup_info_struct(NginxConfig config) {
     return info;
 }
 
+
+//write the handler name to uri mapping to a file so that status handler can read it later
 void writeHandlersToFile(std::map<std::string, std::string>handler_names){
     std::ofstream f("handler_names.txt");
     for (auto const &pair : handler_names){

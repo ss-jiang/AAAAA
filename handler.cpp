@@ -181,6 +181,7 @@ RequestHandler::Status StatusHandler::Init(const std::string& uri_prefix, const 
     return RequestHandler::PASS;
 }
 
+//reads the log file of handled requests and their corresponding responses and fills a map with them
 bool StatusHandler::addHandledRequests() {
     std::ifstream infile("request_response_log.txt");
 
@@ -199,6 +200,7 @@ bool StatusHandler::addHandledRequests() {
     return true; 
 }
 
+//reads the log file of handler names and their corresponding uri's and fills a map with them
 bool StatusHandler::addHandlerMapping() {
     std::ifstream infile("handler_names.txt");
 
@@ -216,6 +218,8 @@ bool StatusHandler::addHandlerMapping() {
     return true;
 }
 
+//Adds the handler names mapping and handler response to reqeust mapping that were created above
+//to the message response body and creates the response object.
 RequestHandler::Status StatusHandler::HandleRequest(const Request& request, Response* response) {
     if (!addHandledRequests() || !addHandlerMapping()){
         return RequestHandler::FAIL;

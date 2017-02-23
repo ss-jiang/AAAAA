@@ -54,6 +54,7 @@ int session::handle_request(const boost::system::error_code& error,
     error_handler->HandleRequest(*request, &response);
   } 
 
+  //calls a function to perform the logging to the log file
   log_request_response(request->uri(), response.ToString());
 
 
@@ -89,6 +90,7 @@ std::string session::get_message_request()
   return s;
 }
 
+//This code logs a request and its corresponding response code into the log text file
 void session::log_request_response(std::string request_url, std::string response)
 {
   int first_space = response.find(" ");

@@ -11,6 +11,9 @@
 
 int main(int argc, char* argv[])
 {
+  //these lines are to just create the log file
+  //close the file right away so if the program fails anywhere else, the log file won't be left open.
+  //the log file is opened anywhere it needs to be read from or written to, so it is ok to close it here.
   std::ofstream ofile("request_response_log.txt");
   ofile.close();
   try
