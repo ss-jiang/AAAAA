@@ -46,3 +46,17 @@ All handlers extend the RequestHandler abstract base class/interface. They imple
 * StaticHandler - serves files from configured path (root <absolute path from base dir>; in child block)
 * StatusHandler - displays information on the status of webserver (# of requests, types of handlers that exist and for which url prefixes)
 * NotFoundHandler - always displays a 404 error when handling a request
+
+## Adding Handlers
+
+To add a handler, you must extend the Handler abstract class. Here is an example of how it should look:
+
+class <YourHandler> : public RequestHandler {
+public:
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+}
+
+
