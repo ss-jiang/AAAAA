@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
-
+#include <fstream>
 #include "gtest/gtest.h"
 #include "../handler.h"
 
@@ -34,12 +34,39 @@ TEST(NotFoundHandlerTest, NotFoundClassTest) {
   EXPECT_EQ(s, RequestHandler::PASS);
 }
 
+TEST(StatusHandlerTest, StatusClassTest) {
+  std::unique_ptr<StatusHandler> handler(new StatusHandler);
 
-// TEST(StaticHandlerTest, StaticClassTest){
-//   std::string url = "/public/index.html";
-//   static_handler handle(url);
+  Request req;
+  Response res;
 
-//   http_response r = handle.handle_request();
-//   EXPECT_EQ(r.to_string(), "HTTP/1.1 200 OK\r\nContent-Length: 28\r\nContent-Type: text/html\r\n\r\n<head> Hello World! </head>\n");
-// }
+  std::ofstream f("request_response_log.txt");
+  std::ofstream t("handler_names.txt");
+  f.close();
+  t.close();
+
+  RequestHandler::Status s = handler->HandleRequest(req, &res);
+
+
+  std::string body = "These are the handlers available and their URIs:\n\nThese are the requests received and their corresponding response codes\n";
+  std::string expected = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) +"\r\nContent-Type: text/plain\r\n\r\n" + body;
+  EXPECT_EQ(res.ToString(), expected);
+  EXPECT_EQ(s, RequestHandler::PASS);
+
+}
+
+
+TEST(StaticHandlerTest, StaticClassTest){
+  std::unique_ptr<StaticHandler> handler(new StaticHandler);
+
+  std::string str_req = "GET ./public/index.html HTTP/1.1\r\n\r\n";
+  auto req = Request::Parse(str_req);
+  Response res;
+
+  RequestHandler::Status s = handler->HandleRequest(*req, &res);
+
+  EXPECT_EQ(res.ToString(), "HTTP/1.1 200 OK\r\nContent-Length: 28\r\nContent-Type: text/html\r\n\r\n<head> Hello World! </head>\n");
+  EXPECT_EQ(s, RequestHandler::PASS);
+
+}
 
