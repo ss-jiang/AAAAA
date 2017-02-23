@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream>
+#include <fstream>
 #include <boost/asio.hpp>
 
 #include "config_parser/config_parser.h"
@@ -10,6 +11,11 @@
 
 int main(int argc, char* argv[])
 {
+  //these lines are to just create the log file
+  //close the file right away so if the program fails anywhere else, the log file won't be left open.
+  //the log file is opened anywhere it needs to be read from or written to, so it is ok to close it here.
+  std::ofstream ofile("request_response_log.txt");
+  ofile.close();
   try
   {
     // only one arg to server possible
@@ -36,8 +42,7 @@ int main(int argc, char* argv[])
     }
 
     boost::asio::io_service io_service;
-    std::map<std::string, std::shared_ptr<RequestHandler>>handler_map = info.handler_map;
-
+    std::map<std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>>handler_map = info.handler_map;
     // create and start server
     std::cout << "Starting server on port: " << std::to_string(info.port) << std::endl;
     server s(io_service, info.port, handler_map);
@@ -47,6 +52,6 @@ int main(int argc, char* argv[])
   {
     std::cerr << "Exception: " << e.what() << "\n";
   }
-
+  
   return 0;
 }

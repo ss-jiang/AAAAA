@@ -8,7 +8,7 @@ import subprocess
 
 def client_thread(args):
 	TCP_IP = '127.0.0.1'
-	TCP_PORT = 8080
+	TCP_PORT = 2020
 	BUFFER_SIZE = 1024
 	MESSAGE = "GET /echo HTTP/1.1\r\n\r\n"
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 	thread_client.join()
 
 	print "\n\n-----Closing the server/Doing cleanup-----"
-	system("fuser -k 8080/tcp")
+	system("fuser -k 2020/tcp")
 
 	time.sleep(2)
 

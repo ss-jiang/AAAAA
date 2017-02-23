@@ -121,13 +121,13 @@ public:
     Status HandleRequest(const Request& request,
                          Response* response);
 
-    Status addHandledRequest(std::string url, int c);
-
-    Status addNameToHandlerMap(std::map<std::string, std::string> m);
+    
 
 private:
     std::map<std::string, std::vector<int>> map_of_request_and_responses;
     std::map<std::string, std::string> map_of_uri_to_handler;
+    bool addHandledRequests();
+    bool addHandlerMapping();
 
 };
 
