@@ -21,6 +21,8 @@ To test:
 
 ``` make test ```
 
+This will build and run the unit and integration tests
+
 To get boost (Ubuntu):
 
 ``` sudo apt-get install libboost-all-dev ```
