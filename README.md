@@ -51,9 +51,11 @@ All handlers extend the RequestHandler abstract base class/interface. They imple
 
 ## Adding Handlers
 
-To add a handler, you must extend the Handler abstract class. Here is an example of how it should look:
+To add a handler, you must extend the Handler abstract class by adding a handler to the handler.h file and implementations to handler.cpp. 
 
-```
+Here is an example of how it should look:
+
+```c++
 class <YourHandler> : public RequestHandler {
 public:
     Status Init(const std::string& uri_prefix, const NginxConfig& config);
@@ -61,6 +63,8 @@ public:
     Status HandleRequest(const Request& request,
                          Response* response);
 }
-```
 
+// Note: This is important!!
+REGISTER_REQUEST_HANDLER(<YourHandler>);
+```
 
