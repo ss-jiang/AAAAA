@@ -1,0 +1,4 @@
+BlockingHandler /block
+EchoHandler /echo
+StaticHandler /static
+StatusHandler /status

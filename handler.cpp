@@ -20,6 +20,21 @@ RequestHandler* RequestHandler::CreateByName(const char* type) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// Blocking Handler  /////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////
+
+RequestHandler::Status BlockingHandler::Init(const std::string& uri_prefix, const NginxConfig& config) {
+    return RequestHandler::PASS;
+}
+
+RequestHandler::Status BlockingHandler::HandleRequest(const Request& request, Response* response){
+    std::cout << "\nBlockingHandler::HandleRequest" << std::endl;
+
+    while (true) {}
+    return RequestHandler::PASS;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////  Not Found Handler  /////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////
 
@@ -197,14 +212,14 @@ bool StatusHandler::addHandledRequests() {
 
     infile.close();
 
-    return true; 
+    return true;
 }
 
 //reads the log file of handler names and their corresponding uri's and fills a map with them
 bool StatusHandler::addHandlerMapping() {
     std::ifstream infile("handler_names.txt");
 
-    if (!infile.is_open()) 
+    if (!infile.is_open())
         return false;
 
     std::string name, url;

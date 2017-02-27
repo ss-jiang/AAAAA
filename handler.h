@@ -112,6 +112,19 @@ public:
 
 REGISTER_REQUEST_HANDLER(NotFoundHandler);
 
+class BlockingHandler : public RequestHandler {
+public:
+    BlockingHandler() {}
+
+    Status Init(const std::string& uri_prefix, const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+};
+
+
+REGISTER_REQUEST_HANDLER(BlockingHandler);
+
 class StatusHandler : public RequestHandler {
 public:
     StatusHandler() {}
@@ -120,8 +133,6 @@ public:
 
     Status HandleRequest(const Request& request,
                          Response* response);
-
-    
 
 private:
     std::map<std::string, std::vector<int>> map_of_request_and_responses;

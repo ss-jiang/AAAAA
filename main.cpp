@@ -46,12 +46,14 @@ int main(int argc, char* argv[])
     // create and start server
     std::cout << "Starting server on port: " << std::to_string(info.port) << std::endl;
     server s(io_service, info.port, handler_map);
-    io_service.run();
+
+    // run server
+    s.run();
   }
   catch (std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
   }
-  
+
   return 0;
 }
