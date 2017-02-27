@@ -10,26 +10,20 @@ def setup_socket():
 	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	return s;
 
-def client_thread_paused(args):
+def client_thread_paused():
 	TCP_IP = '127.0.0.1'
 	TCP_PORT = 2020
 	BUFFER_SIZE = 1024
-	MESSAGE = "GET /echo HTTP/1.1"
+	MESSAGE = "GET /block HTTP/1.1"
 
 	s = setup_socket()
 	s.connect(('localhost', TCP_PORT))
 	s.send(MESSAGE)
-	time.sleep(5)
 	s.send("\r\n\r\n")
 	data = s.recv(BUFFER_SIZE)
 	s.close()
 
-	if (data != "HTTP/1.1 200 OK\r\nContent-Length: 18\r\nContent-Type: text/plain\r\n\r\nGET /echo HTTP/1.1\r\n\r\n"):
-	    	print "Failure response: ", repr(data)
-                error_code[0] = 1
-		return
-
-	error_code[0] = 0
+	return
 
 def client_thread(error_code, REQUEST, E_RESPONSE):
 	TCP_IP = '127.0.0.1'
@@ -56,19 +50,29 @@ if __name__ == "__main__":
 
 	time.sleep(4)
 
+
+
+	#test functionality of the echo handler
+	error_code = [0]
+	REQUEST = "GET /echo HTTP/1.1\r\n\r\n"
+	EXPECTED_RESPONSE = "HTTP/1.1 200 OK\r\nContent-Length: 18\r\nContent-Type: text/plain\r\n\r\nGET /echo HTTP/1.1\r\n\r\n"
+	thread_client_four = Thread(target = client_thread, args=(error_code, REQUEST, EXPECTED_RESPONSE))
+	thread_client_four.start()
+	thread_client_four.join()
+
 	#tests the functionality of the status handler
 	error_code_three = [0]
 	REQUEST = "GET /status HTTP/1.1\r\n\r\n"
-	EXPECTED_RESPONSE = "HTTP/1.1 200 OK\r\nContent-Length: 218\r\nContent-Type: text/plain\r\n\r\nThese are the handlers available and their URIs:\nBlockingHandler -> /block\nEchoHandler -> /echo\nStaticHandler -> /static\nStatusHandler -> /status\n\nThese are the requests received and their corresponding response codes\n"
+	EXPECTED_RESPONSE = "HTTP/1.1 200 OK\r\nContent-Length: 231\r\nContent-Type: text/plain\r\n\r\nThese are the handlers available and their URIs:\nBlockingHandler -> /block\nEchoHandler -> /echo\nStaticHandler -> /static\nStatusHandler -> /status\n\nThese are the requests received and their corresponding response codes\n/echo -> 200\n"
 	thread_client_three = Thread(target = client_thread, args=(error_code_three, REQUEST, EXPECTED_RESPONSE))
 	thread_client_three.start()
 	thread_client_three.join()
 
 	#test shows that multithreading works because the first thread is opened then paused
 	#and the second thread that was opened finishes before the first finishes.
-	#also tests the functionalities of the echo and static handlers
-	error_code = [0]
-	thread_client = Thread(target = client_thread_paused, args=(error_code))
+	#also tests the functionalities of the static handler
+	
+	thread_client = Thread(target = client_thread_paused, args=())
 	thread_client.start()
 	
 	error_code_two = [0]
@@ -77,7 +81,6 @@ if __name__ == "__main__":
 	thread_client_two = Thread(target = client_thread, args=(error_code_two, REQUEST, EXPECTED_RESPONSE))
 	thread_client_two.start()
 
-	thread_client.join()
 	thread_client_two.join()
 
 	print "\n\n-----Closing the server/Doing cleanup-----"
