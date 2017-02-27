@@ -69,7 +69,6 @@ test:
 	./utils_test
 	./http_request_test
 	./http_response_test
-	python2 test/integration_test.py
 	python2 test/integration_multithread_test.py
 
 clean:
