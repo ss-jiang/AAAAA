@@ -42,7 +42,6 @@ int main(int argc, char* argv[])
     }
 
     boost::asio::io_service io_service;
-    // std::map<std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>>handler_map = info.handler_map;
 
     // create and start server
     std::cout << "Starting server on port: " << std::to_string(info.port) << std::endl;
