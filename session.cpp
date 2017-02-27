@@ -10,7 +10,6 @@
 #include <fstream>
 #include <memory>
 
-
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>> handler_map)
   : socket_(io_service), handler_map(handler_map) {}
