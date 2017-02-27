@@ -1,4 +1,5 @@
 request_response_log.txt
+handler_names.txt
 web-server
 simple-config
 bin/*
