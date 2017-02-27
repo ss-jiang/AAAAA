@@ -9,7 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <memory>
-#include <thread>
+
 
 session::session(boost::asio::io_service& io_service,
   std::map <std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>> handler_map)
