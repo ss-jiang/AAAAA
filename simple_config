@@ -1,5 +1,6 @@
 # This is a comment
 port 2020;
+num_threads 5;
 
 path /static StaticHandler {
   root ./public;
@@ -8,6 +9,8 @@ path /static StaticHandler {
 path /echo EchoHandler {}
 
 path /status StatusHandler {}
+
+path /block BlockingHandler {}
 
 # Default response handler if no handlers match.
 default NotFoundHandler {}
