@@ -14,7 +14,7 @@ using boost::asio::ip::tcp;
 class server {
 
 public:
-  server(boost::asio::io_service& io_service, short port,
+  server(boost::asio::io_service& io_service, short port, size_t num_threads,
   	std::map<std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>> function_mapping);
 
   void handle_accept(session* new_session, const boost::system::error_code& error);

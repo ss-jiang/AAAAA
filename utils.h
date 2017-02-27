@@ -8,7 +8,7 @@
 // server info struct
 struct ServerInfo {
     short port;
-
+    size_t num_threads;
     // map that maps url prefix to pair of handler name and pointer
     // Ex. "/echo" -> EchoHandler
     std::map <std::string, std::pair<std::string, std::shared_ptr<RequestHandler>>> handler_map;
