@@ -57,7 +57,6 @@ class RequestHandlerRegisterer {
 #define REGISTER_REQUEST_HANDLER(ClassName) \
   static RequestHandlerRegisterer<ClassName> ClassName##__registerer(#ClassName)
 
-// simple handler to echo back raw response
 class EchoHandler : public RequestHandler {
 public:
     EchoHandler() {}
@@ -73,7 +72,6 @@ private:
 
 REGISTER_REQUEST_HANDLER(EchoHandler);
 
-// handler to serve file as response
 class StaticHandler : public RequestHandler {
 public:
     StaticHandler() {}
@@ -101,7 +99,6 @@ private:
 
 REGISTER_REQUEST_HANDLER(StaticHandler);
 
-// handler to display 404 error
 class NotFoundHandler : public RequestHandler {
 public:
     NotFoundHandler() {}
@@ -115,21 +112,6 @@ public:
 
 REGISTER_REQUEST_HANDLER(NotFoundHandler);
 
-// handler that blocks forever to help test multithreading code
-class BlockingHandler : public RequestHandler {
-public:
-    BlockingHandler() {}
-
-    Status Init(const std::string& uri_prefix, const NginxConfig& config);
-
-    Status HandleRequest(const Request& request,
-                         Response* response);
-};
-
-
-REGISTER_REQUEST_HANDLER(BlockingHandler);
-
-// handler that displays status page for server
 class StatusHandler : public RequestHandler {
 public:
     StatusHandler() {}
@@ -138,6 +120,8 @@ public:
 
     Status HandleRequest(const Request& request,
                          Response* response);
+
+    
 
 private:
     std::map<std::string, std::vector<int>> map_of_request_and_responses;
@@ -148,5 +132,30 @@ private:
 };
 
 REGISTER_REQUEST_HANDLER(StatusHandler);
+
+
+class ProxyHandler : public RequestHandler {
+public:
+    ProxyHandler() {}
+
+    Status Init(const std::string& uri_prefix,
+                const NginxConfig& config);
+
+    Status HandleRequest(const Request& request,
+                         Response* response);
+
+    std::string get_response(std::string path);
+    
+private:
+    //uri_prefix specified by the config file exposed to users
+    std::string uri_prefix;
+    
+    std::string host;
+
+    std::string port;
+
+};
+
+REGISTER_REQUEST_HANDLER(ProxyHandler);
 
 #endif
