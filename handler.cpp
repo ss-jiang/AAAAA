@@ -1,6 +1,7 @@
 #include "handler.h"
 #include "http_response.h"
 #include "http_request.h"
+#include "response_parser.h"
 
 #include <iostream>
 #include <fstream>
@@ -288,17 +289,10 @@ RequestHandler::Status ProxyHandler::Init(const std::string& uri_prefix, const N
 std::string ProxyHandler::get_response(std::string path)
 {
 
-    using boost::asio::ip::tcp;
+  using boost::asio::ip::tcp;
 
   try
   {
-    // if (argc != 3)
-    // {
-    //   std::cout << "Usage: sync_client <server> <path>\n";
-    //   std::cout << "Example:\n";
-    //   std::cout << "  sync_client www.boost.org /LICENSE_1_0.txt\n";
-    //   return 1;
-    // }
 
     boost::asio::io_service io_service;
 
@@ -317,11 +311,12 @@ std::string ProxyHandler::get_response(std::string path)
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    request_stream << "GET " << path << " HTTP/1.0\r\n";
+    request_stream << "GET " << path << " HTTP/1.1\r\n";
     request_stream << "Host: " << host << "\r\n";
     request_stream << "Accept: */*\r\n";
-    request_stream << "Connection: close\r\n\r\n";
+    request_stream << "Connection: keep-alive\r\n\r\n";
 
+    std::cout << "REQUEST: " << path << std::endl;
     // Send the request.
     boost::asio::write(socket, request);
 
@@ -329,41 +324,26 @@ std::string ProxyHandler::get_response(std::string path)
     // grow to accommodate the entire line. The growth may be limited by passing
     // a maximum size to the streambuf constructor.
     boost::asio::streambuf response;
-    boost::asio::read_until(socket, response, "\r\n");
-
-    // Check that response is OK.
-    std::istream response_stream(&response);
-    std::string http_version;
-    response_stream >> http_version;
-    unsigned int status_code;
-    response_stream >> status_code;
-    std::string status_message;
-    std::getline(response_stream, status_message);
-    if (!response_stream || http_version.substr(0, 5) != "HTTP/")
-    {
-      std::cout << "Invalid response\n";
-      return "";
-    }
-    if (status_code != 200)
-    {
-      std::cout << "Response returned with status code " << status_code << "\n";
-      return "";
-    }
 
     // Read the response headers, which are terminated by a blank line.
     boost::asio::read_until(socket, response, "\r\n\r\n");
-
-    // Process the response headers.
-    std::string header;
-    while (std::getline(response_stream, header) && header != "\r")
-      std::cout << header << "\n";
-    std::cout << "\n";
 
     // Write whatever content we already have to output.
     std::string s = "";
     if (response.size() > 0){
         std::string a( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
       s += a;
+    }
+
+    if (!response_parser.Parse(s) == ResponseParser::ParseStatus::OK) {
+        std::cout << "Response parsing error!\n";
+    }
+    else {
+        response_parser.Parse(s);
+        // std::cout << response_parser.getStatus() << std::endl;
+        // std::cout << response_parser.getContentLength() << std::endl;
+        // std::cout << response_parser.getContentType() << std::endl;
+        // std::cout << response_parser.getRedirectPath() << std::endl;
     }
 
     // Read until EOF, writing data to output as we go.
@@ -389,13 +369,31 @@ std::string ProxyHandler::get_response(std::string path)
 }
 
 RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Response* response) {
-    std::cout << "\nEchoHandler::HandleRequest" << std::endl;
+    std::cout << "\nProxyHandler::HandleRequest" << std::endl;
 
     response->SetStatus(Response::OK);
-    std::string response_string = get_response("/");
+
+    // Pass in the request uri
+    std::string request_uri = request.uri();
+    std::string response_string = get_response(request_uri);
     response->AddHeader("Content-Length", std::to_string(response_string.length() - 4));
-    response->AddHeader("Content-Type", "text/html");
-    std::cout << "reponse string: " << response_string << std::endl;
+
+    // Get content type
+    size_t content_type_start = response_string.find("Content-Type: ");
+    size_t content_type_end = get_type(response_string.substr(content_type_start + 14));
+    std::string content_type_parsed = response_string.substr(content_type_start + 14, content_type_end);
+    std::cout << "CONTENT TYPE: " << content_type_parsed << std::endl;
+
+    response->AddHeader("Content-Type", content_type_parsed);
     response->SetBody(response_string);
     return RequestHandler::PASS;
+}
+
+size_t ProxyHandler::get_type(std::string input_string)
+{
+    for (size_t i = 0; i < input_string.length(); i++)
+        if (input_string[i] == '\r' || input_string[i] == ';')
+            return i;
+
+    return -1;
 }

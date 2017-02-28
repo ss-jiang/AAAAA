@@ -4,6 +4,7 @@
 #include <boost/asio.hpp>
 #include "http_response.h"
 #include "http_request.h"
+#include "response_parser.h"
 #include "config_parser/config_parser.h"
 #include <vector>
 
@@ -146,6 +147,8 @@ public:
 
     std::string get_response(std::string path);
     
+    size_t get_type(std::string input_string);
+
 private:
     //uri_prefix specified by the config file exposed to users
     std::string uri_prefix;
@@ -153,6 +156,8 @@ private:
     std::string host;
 
     std::string port;
+
+    ResponseParser response_parser;
 
 };
 
