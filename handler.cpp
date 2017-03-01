@@ -311,10 +311,9 @@ std::string ProxyHandler::get_response(std::string path)
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    request_stream << "GET " << path << " HTTP/1.1\r\n";
-    request_stream << "Host: " << host << "\r\n";
-    request_stream << "Accept: */*\r\n";
-    request_stream << "Connection: keep-alive\r\n\r\n";
+    std::string request_str = "GET " + path + " HTTP/1.1\r\n" + "Host: " + host + "\r\n" 
+    + "Accept: */*\r\n" + "Connection: keep-alive\r\n\r\n";
+    request_stream << request_str;
 
     std::cout << "REQUEST: " << path << std::endl;
     // Send the request.
@@ -332,26 +331,71 @@ std::string ProxyHandler::get_response(std::string path)
     std::string s = "";
     if (response.size() > 0){
         std::string a( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
-      s += a;
+        s += a;
     }
+
+    boost::system::error_code error;
 
     if (!response_parser.Parse(s) == ResponseParser::ParseStatus::OK) {
         std::cout << "Response parsing error!\n";
-    }
-    else {
-        response_parser.Parse(s);
-        // std::cout << response_parser.getStatus() << std::endl;
-        // std::cout << response_parser.getContentLength() << std::endl;
-        // std::cout << response_parser.getContentType() << std::endl;
-        // std::cout << response_parser.getRedirectPath() << std::endl;
-    }
+    }   // Handle redirect
+    else if (response_parser.getStatus() == 302 && !response_parser.getRedirectPath().empty()) {
+        
+        // Assume redirect location has format "http://www.something.com/"
+        std::string parsed_redirect = response_parser.getRedirectPath();
+        parsed_redirect = parsed_redirect.substr(parsed_redirect.find("w"));
 
-    // Read until EOF, writing data to output as we go.
-    boost::system::error_code error;
-    while (boost::asio::read(socket, response,
-          boost::asio::transfer_at_least(1), error)){
-        std::string a( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
-      s += a;
+        // Want to set host to "www.something.com" without the last slash
+        size_t first_slash = parsed_redirect.find("/");
+
+        std::string host_ = parsed_redirect.substr(0, first_slash);
+        host_ = host_.substr(0, host_.length());
+        std::cout << "HOST: " << host_ << std::endl;
+
+        // Get a list of endpoints corresponding to the server name.
+        tcp::resolver::query new_query(host_, "http");
+        endpoint_iterator = resolver.resolve(new_query);
+
+        // Try each endpoint until we successfully establish a connection.
+        boost::asio::connect(socket, endpoint_iterator);
+
+        // Construct new request with the proper host
+        std::string new_request_str = "GET " + path + " HTTP/1.1\r\n" + "Host: " + host_ + "\r\n" 
+        + "Accept: */*\r\n" + "Connection: keep-alive\r\n\r\n";
+
+        boost::asio::streambuf new_request;
+        std::ostream new_request_stream(&new_request);
+        new_request_stream << new_request_str;
+
+        boost::asio::write(socket, new_request);
+
+        boost::asio::streambuf response_redirect;
+        // Read the response headers, which are terminated by a blank line.
+        // boost::asio::read_until(socket, response_redirect, "\r\n\r\n");
+
+        // // Write whatever content we already have to output.
+        s = "";
+        // if (response_redirect.size() > 0){
+        //     std::string a( (std::istreambuf_iterator<char>(&response_redirect)), std::istreambuf_iterator<char>() );
+        //     s += a;
+        // }
+
+            // Read until EOF, writing data to output as we go.
+        while (boost::asio::read(socket, response_redirect,
+              boost::asio::transfer_at_least(1), error)){
+            std::string a( (std::istreambuf_iterator<char>(&response_redirect)), std::istreambuf_iterator<char>() );
+            s += a;
+        }
+    }
+    else { // Request returned 200
+
+        response_parser.emptyVector();
+        // Read until EOF, writing data to output as we go.
+        while (boost::asio::read(socket, response,
+              boost::asio::transfer_at_least(1), error)){
+            std::string a( (std::istreambuf_iterator<char>(&response)), std::istreambuf_iterator<char>() );
+            s += a;
+        }
     }
 
     if (error != boost::asio::error::eof)
@@ -376,24 +420,23 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     // Pass in the request uri
     std::string request_uri = request.uri();
     std::string response_string = get_response(request_uri);
-    response->AddHeader("Content-Length", std::to_string(response_string.length() - 4));
 
-    // Get content type
-    size_t content_type_start = response_string.find("Content-Type: ");
-    size_t content_type_end = get_type(response_string.substr(content_type_start + 14));
-    std::string content_type_parsed = response_string.substr(content_type_start + 14, content_type_end);
-    std::cout << "CONTENT TYPE: " << content_type_parsed << std::endl;
+    response_parser.Parse(response_string);
 
-    response->AddHeader("Content-Type", content_type_parsed);
+    response->AddHeader("Content-Length", std::to_string(response_string.length()));
+
+    auto header_vec = response_parser.getHeaders();
+
+    for(auto i = header_vec.begin(); i != header_vec.end(); i++) {
+        std::cout << "Name: " << (*i).first << " " << "Value: " <<  (*i).second << std::endl;
+        response->AddHeader((*i).first, (*i).second);
+        //res_str += (*it).first + ": " + (*it).second + "\r\n";
+    }
+
+    // response->AddHeader("Content-Type", response_parser.getContentType());
+    //response->SetBody(response_parser.getResponseBody());
     response->SetBody(response_string);
+    response_parser.emptyVector();
+
     return RequestHandler::PASS;
-}
-
-size_t ProxyHandler::get_type(std::string input_string)
-{
-    for (size_t i = 0; i < input_string.length(); i++)
-        if (input_string[i] == '\r' || input_string[i] == ';')
-            return i;
-
-    return -1;
 }
