@@ -146,7 +146,7 @@ public:
                          Response* response);
 
     std::string get_response(std::string path);
-    
+
     size_t get_type(std::string input_string);
 
 private:

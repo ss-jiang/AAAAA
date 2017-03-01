@@ -21,8 +21,7 @@ public:
 	//int getContentLength() { return m_content_length; }
 	//std::string getContentType() { return m_content_type; }
 	std::string getRedirectPath() { return m_redirect_path; }
-
-	std::vector<std::pair<std::string, std::string>> getHeaders() { return m_headers; }
+	std::vector<std::pair<std::string, std::string>> getHeaders();
 
 	void emptyVector() { m_headers.clear(); }
 
@@ -35,7 +34,7 @@ private:
 	int m_status_code;
 	//int m_content_length;
 	std::string m_content_type;
-	std::string m_redirect_path;
+	std::string m_redirect_path; 
 };
 
 #endif

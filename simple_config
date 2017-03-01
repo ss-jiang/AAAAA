@@ -6,7 +6,7 @@ path /static StaticHandler {
 }
 
 path / ProxyHandler {
-	host www.ucla.edu;
+	host ucla.edu;
 	# port 2020;
 }
 

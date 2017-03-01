@@ -420,6 +420,16 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     // Pass in the request uri
     std::string request_uri = request.uri();
     std::string response_string = get_response(request_uri);
+    // size_t content_index = response_string.find("Content-Type: ");
+    // std::string content_sub = response_string.substr(content_index);
+    // size_t end_row = content_sub.find("/");
+    // content_sub = content_sub.substr(0, end_row);
+
+    // if (content_sub == "image"){
+    //     size_t end_index = response_string.find("\r\n\r\n");
+    //     response->SetBody(response_string.substr(end_index + 4));
+    // }
+    // std::cout << response_string << std::endl; 
 
     response_parser.Parse(response_string);
 
@@ -428,14 +438,26 @@ RequestHandler::Status ProxyHandler::HandleRequest(const Request& request, Respo
     auto header_vec = response_parser.getHeaders();
 
     for(auto i = header_vec.begin(); i != header_vec.end(); i++) {
-        std::cout << "Name: " << (*i).first << " " << "Value: " <<  (*i).second << std::endl;
+        if((*i).first == "Content-Type") {
+            size_t first_slash = (*i).second.find_first_of("/"); 
+            if((*i).second.substr(0, first_slash) == "image"){
+                size_t end_index = response_string.find("\r\n\r\n");
+                response->SetBody(response_string.substr(end_index + 4));
+                break;
+            }
+        }
+        if((*i).first == "Content") {
+            response->SetBody((*i).second); 
+            break;
+        }
+        //std::cout << "Name: " << (*i).first << " " << "Value: " <<  (*i).second << std::endl;
         response->AddHeader((*i).first, (*i).second);
         //res_str += (*it).first + ": " + (*it).second + "\r\n";
     }
 
     // response->AddHeader("Content-Type", response_parser.getContentType());
     //response->SetBody(response_parser.getResponseBody());
-    response->SetBody(response_string);
+    //response->SetBody();
     response_parser.emptyVector();
 
     return RequestHandler::PASS;

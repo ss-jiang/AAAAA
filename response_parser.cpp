@@ -3,6 +3,8 @@
 
 ResponseParser::ResponseParser() {
 	m_redirect_path = "";
+	m_content_type = ""; 
+	m_status_code = 0; 
 	//m_response = "";
 	//m_content_type = "";
 }
@@ -31,16 +33,19 @@ ResponseParser::ParseStatus ResponseParser::Parse(std::string response) {
 	std::string rest_of_headers = response.substr(index + 2);
 
 	size_t index2 = rest_of_headers.find("\n");
-	size_t counter = index + index2; 
+	size_t counter = index + index2 + 4; 
 	while(counter < end_index && index2 != std::string::npos) {
 		//find header name 
 		size_t first_colon = rest_of_headers.find_first_of(":"); 
 		std::string header_name = rest_of_headers.substr(0, first_colon); 
 
+		std::cout << "Header name: " << header_name << std::endl;
+
 		//find header value 
 		size_t end_of_row = rest_of_headers.find("\r\n");  
 		std::string header_value = rest_of_headers.substr(first_colon + 2, end_of_row - first_colon - 2); 
 
+		std::cout << "Header value: " << header_value << std::endl;
 		rest_of_headers = rest_of_headers.substr(end_of_row + 2, end_index);
 		index2 = end_of_row;
 		counter += index2; 
@@ -49,9 +54,12 @@ ResponseParser::ParseStatus ResponseParser::Parse(std::string response) {
 			m_redirect_path = header_value;
 		else
 			m_headers.push_back(std::make_pair(header_name, header_value));
+
+		std::cout << "counter : " << counter << " end_index : " << end_index << std::endl;
 	}
 
-	//m_response_body = response.substr(end_index + 4);
+	std::string m_response_body = response.substr(end_index + 4);
+	m_headers.push_back(std::make_pair("Content", m_response_body));
 
 	return ResponseParser::ParseStatus::OK;	
 }
@@ -70,4 +78,8 @@ size_t ResponseParser::find_line_ending(std::string input_string)
 			return i;
 
 	return -1;
+}
+
+std::vector<std::pair<std::string, std::string>> ResponseParser::getHeaders() {
+	return m_headers;
 }
