@@ -1,4 +1,5 @@
 #include "http_response.h"
+#include <iostream>
 
 std::string Response::ToString() {
     std::string res_str = "";
